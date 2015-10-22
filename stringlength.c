@@ -11,10 +11,6 @@ int main()
 
   semitone_ratio = pow(2.0, 1.0/12.0);
 
-  c5 = 220.0 * pow(semitone_ratio, 3.0);
-
-  c0 = c5 * pow(0.5, 5.0);
-
   //string 660cm long will sound at C4
   //A loop will save time from all this typing.
   frequency = 660;
