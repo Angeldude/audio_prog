@@ -4,8 +4,6 @@
 int main()
 {
   double semitone_ratio;
-  double c0;
-  double c5;
   double frequency;
   int midinote;
 
