@@ -5,7 +5,6 @@ int main()
 {
   double semitone_ratio;
   double frequency;
-  int midinote;
 
   semitone_ratio = pow(2.0, 1.0/12.0);
 

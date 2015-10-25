@@ -10,7 +10,7 @@ int mod12(int note) {
 int main(int argc, char** argv)
 {
   int series[12][12], offset;
-  int n, m, i;
+  int n, m;
   char* table[12]= {"C", "Db", "D", "Eb", "E",
                      "F", "Gb", "G", "Ab", "A",
                      "Bb", "B"};
