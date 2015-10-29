@@ -9,6 +9,8 @@ int main()
   char message[256];
   char* result;
 
+  /* these next 3 lines of code calculate the semitone ratio
+  and the base midi scale for further calculating */
   semitone_ratio = pow(2.0, 1.0/12.0);
   c5 = 220.0 * pow(semitone_ratio, 3.0);
   c0 = c5 * pow(0.5, 5.0);
@@ -31,6 +33,7 @@ int main()
     printf("Sorry - %s is beyond the MIDI range!\n", message);
     return 1;
   }
+  // formula for converting midi note number to frequency in hertz
   frequency = c0 * pow(semitone_ratio, midinote);
   printf("frequency of MIDI note %d = %f\n", midinote, frequency);
   return 0;
