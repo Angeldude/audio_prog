@@ -14,8 +14,7 @@ int main()
   c0 = c5 * pow(0.5, 5.0);
 
   printf("Enter MIDI note (0 - 127): ");
-  result = gets(message);
-  if(result == NULL){
+  if(gets(message) == NULL){
     printf("There was an error reading the input.\n");
     return 1;
   }
