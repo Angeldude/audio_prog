@@ -49,7 +49,7 @@ int main()
   freq1 = c0 * pow(semitone_ratio, midinote1);
   freq2 = c0 * pow(semitone_ratio, midinote2);
   //calculating pitch bend of nearest midi note
-  bend = (int) (100 * ((frequency - freq1)/(freq1 - freq2)));
+  bend = lround(100 * ((frequency - freq1)/(freq1 - freq2)));
 
 
   printf("The nearest MIDI note to the frequency %f is %d\n", frequency, midinote1);
