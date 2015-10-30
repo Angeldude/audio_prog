@@ -7,7 +7,6 @@ int main()
   double semitone_ratio, c0,c5,frequency;
   int midinote;
   char message[256];
-  char* result;
 
   /* these next 3 lines of code calculate the semitone ratio
   and the base midi scale for further calculating */
