@@ -34,6 +34,11 @@ int main()
   }
   // formula for converting midi note number to frequency in hertz
   frequency = c0 * pow(semitone_ratio, midinote);
+  
+  // ex 1.3.4 a) removing  final double quotation mark from printf
+  // compiler message: missing terminating " as well as errors
+  // for b) missing variable name in format specifier: a warning was
+  // generated but still compiled. program does not output correct nums
   printf("frequency of MIDI note %d = %f\n", midinote, frequency);
   return 0;
 }
