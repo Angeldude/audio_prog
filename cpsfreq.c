@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
   }
   frequency = atof(argv[1]);
   if(frequency < 8){
-    printf("%s is a bad frequency.\n", argv[1]);
+    printf("%s hz goes below MIDI range.\n", argv[1]);
     return 1;
   }
   fracmidi = log(frequency / c0) / log(semitone_ratio);
