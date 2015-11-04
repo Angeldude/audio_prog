@@ -41,7 +41,7 @@ int main()
   midinote1 = (int) (fracmidi + 0.5);
   midinote2 = (int) (fracmidi - 0.5);
 
-  if(frequency > 12543.853951){
+  if(frequency >= 12544){
     printf("Sorry - %s hz is beyond the MIDI range!\n", message);
     return 1;
   }

@@ -4,7 +4,7 @@
 
 int main()
 {
-  double semitone_ratio, c0,c5,frequency;
+  double semitone_ratio, c0,c5,frequency, dummy;
   int midinote;
   char message[256];
 
@@ -23,7 +23,16 @@ int main()
     printf("Have a nice day!\n");
     return 1;
   }
+
+  dummy = atof(message);
   midinote = atoi(message);
+
+  if(dummy != midinote)
+  {
+    printf("Sorry, MIDI notes can only be integers.");
+    return 1;
+  }
+
   if(midinote < 0){
     printf("Sorry - %s is a bad MIDI note number.\n", message);
     return 1;
@@ -34,7 +43,7 @@ int main()
   }
   // formula for converting midi note number to frequency in hertz
   frequency = c0 * pow(semitone_ratio, midinote);
-  
+
   // ex 1.3.4 a) removing  final double quotation mark from printf
   // compiler message: missing terminating " as well as errors
   // for b) missing variable name in format specifier: a warning was
