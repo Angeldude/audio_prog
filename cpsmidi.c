@@ -4,24 +4,40 @@
 
 int main(int argc, char* argv[])
 {
-  double semitoneratio, c0,c5,frequency;
+  double semitoneratio, c0,c5,frequency, midifloat, tuning;
   int midinote;
 
   /* these next 3 lines of code calculate the semitone ratio
   and the base midi scale for further calculating */
   semitoneratio = pow(2.0, 1.0/12.0);
-  c5 = 220.0 * pow(semitoneratio, 3.0);
-  c0 = c5 * pow(0.5, 5.0);
 
   /* if the program is not called cpsmidi, either change the lines below,
   or use the argv[0] system */
-  if(argc != 2){
+  if(argc < 2){
     printf("%s : converts MIDI note to frequency.\n", argv[0]);
     printf("usage: %s MIDInote\n", argv[0]);
     printf("range: 0 <= MIDInote <= 127\n");
     return 1;
   }
+  /* allow to change tuning note */
+  if(argv[2] == '\0')
+  {
+    c5 = 220.0 * pow(semitoneratio, 3.0);
+  } else {
+    tuning = atof(argv[2]);
+    c5 = (tuning/2) * pow(semitoneratio, 3.0);
+  }
+
+  c0 = c5 * pow(0.5, 5.0);
+
+  midifloat = atof(argv[1]);
   midinote = atoi(argv[1]);
+
+  if(midifloat != midinote)
+  {
+    printf("MIDI numbers can only be integers.");
+    return 1;
+  }
   if(midinote < 0){
     printf("Bad MIDI note value: %s\n", argv[1]);
     return 1;
