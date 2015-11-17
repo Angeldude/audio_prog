@@ -41,13 +41,17 @@ int main(int argc, char* argv[])
   c0 = c5 * pow(0.5, 5);
   frequency = c0 * pow(ratio, midinote);
 
-  for(i = 0; i < notes; i++){
+  // exercise 1.5.2 a) loop as a while
+  i = 0;
+  while(i < notes){
     intervals[i] = frequency;
     frequency *= ratio;
+    i++;
   }
-
-  for(i = 0; i < notes; i++){
+  i = 0;
+  while(i <notes){
     printf("%f\n", intervals[i]);
+    i++;
   }
 
   return 0;
