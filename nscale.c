@@ -7,11 +7,11 @@
 int main(int argc, char* argv[])
 {
   int notes, midinote, i;
-  double frequency, ratio;
+  double frequency, ratio, octave;
   double c0, c5;
   double intervals[24];
-  
-  if(argc != 3){
+
+  if(argc != 4){
     printf("usage: nscale notes midinote\n");
     return 1;
   }
@@ -33,8 +33,9 @@ int main(int argc, char* argv[])
     printf("Error: maximum MIDI note is 127\n");
     return 1;
   }
-
-  ratio = pow(2.0, 1.0/notes);
+  // needs debugging
+  octave = atof(argv[3]);
+  ratio = pow(octave, 1.0/notes);
   /* find Middle C, three semitones above low A = 220 */
   c5 = 220.0 * pow(ratio, 3);
   /* MIDI note 0 is C, 5 octaves below Middle C */
