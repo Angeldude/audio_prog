@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
   double frequency, ratio;
   double c0, c5;
   double intervals[24];
-
+  
   if(argc != 3){
     printf("usage: nscale notes midinote\n");
     return 1;
