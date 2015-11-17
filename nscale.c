@@ -49,14 +49,16 @@ int main(int argc, char* argv[])
     frequency *= ratio;
     i++;
   }
-  while(i < notes);
+  //exercise 1.5.3 full octave display
+  while(i <= notes);
 
   i = 0;
+  //exercise 1.5.4 print counter
   do{
-    printf("%f\n", intervals[i]);
+    printf("%d: %f\n", i+1, intervals[i]);
     i++;
   }
-  while(i < notes);
+  while(i <= notes);
 
   return 0;
 }
