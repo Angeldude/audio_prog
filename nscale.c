@@ -7,12 +7,13 @@
 int main(int argc, char* argv[])
 {
   int notes, midinote, i;
-  double frequency, ratio, octave;
+  double frequency, ratio, tuning;
   double c0, c5;
   double intervals[24];
 
   if(argc != 4){
-    printf("usage: nscale notes midinote\n");
+    printf("usage: nscale notes midinote tuning\n\n");
+    printf("When the user provides the number of notes,\nthe starting note (in midi number)\nand the tuning, the program will list a chromatic scale with all\nthe frequencies that make up the notes.\nThe tuning will divide the frequencies evenly so that all\nintervals maintain equal ratios.\n");
     return 1;
   }
   notes = atoi(argv[1]);
@@ -34,8 +35,8 @@ int main(int argc, char* argv[])
     return 1;
   }
   // needs debugging
-  octave = atof(argv[3]);
-  ratio = pow(octave, 1.0/notes);
+  tuning = atof(argv[3]);
+  ratio = pow(tuning, 1.0/notes);
   /* find Middle C, three semitones above low A = 220 */
   c5 = 220.0 * pow(ratio, 3);
   /* MIDI note 0 is C, 5 octaves below Middle C */
