@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
   if(argc < 3){
     printf("insufficient arguments\n");
-    printf("Usage: iscale [-m][-i] N startval [outfile.txt]\n")
+    printf("Usage: iscale [-m][-i] N startval [outfile.txt]\n");
     return 1;
   }
   /* now read and check all arguments */
