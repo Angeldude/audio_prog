@@ -61,6 +61,5 @@ int main(int argc, char* argv[])
     i++;
   }
   while(i <= notes);
-
   return 0;
 }
