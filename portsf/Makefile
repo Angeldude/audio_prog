@@ -6,16 +6,27 @@ CFLAGS = -c
 
 CC = gcc
 
-all:     libportsf.a
+all:	libportsf.a
 
 clean:
-        -rm -f $(POBJS)
+	-rm -f $(POBJS)
 
 veryclean:
-        -rm -f $(POBJS)
-        rm -f libportsf.a
-        sudo rm -f /usr/lib/libportsf.a
-        sudo rm -f /usr/include/portsf.h
-        sudo rm -f /usr/include/ieee80.h
+	-rm -f $(POBJS)
+	rm -f libportsf.a
+	sudo rm -f /usr/lib/libportsf.a
+	sudo rm -f /usr/include/portsf.h
+	sudo rm -f /usr/include/ieee80.h
 
 libportsf.a: $(POBJS)
+	ar -rc libportsf.a $(POBJS)
+	ranlib libportsf.a
+install:
+	sudo cp libportsf.a /usr/lib
+	sudo cp $(PLIB) /usr/include
+
+ieee80.o: ieee80.c ieee80.h
+	$(CC) $(CFLAGS) ieee80.c
+
+portsf.o: portsf.c
+	$(CC) $(CFLAGS) portsf.c

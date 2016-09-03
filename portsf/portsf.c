@@ -37,7 +37,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <assert.h>
 #endif
 
-#include <portsf.h>
+#include "../include/portsf.h"
 
 #ifndef DBGFPRINTF
 # ifdef _DEBUG
@@ -76,7 +76,7 @@ int strnicmp(const char *a, const char *b, const int length);
 #define TAG(a,b,c,d)	( ((a)<<24) | ((b)<<16) | ((c)<<8) | (d) )
 /* these give bit-acccurate conversions */
 #define MAX_16BIT  (32768.0)
-#define MAX_32BIT  (2147483648.0)		 
+#define MAX_32BIT  (2147483648.0)
 #define AIFC_VERSION_1 (0xA2805140)
 /*pstring for AIFC	- includes the pad byte*/
 static const char aifc_floatstring[10] = { 0x08,'F','l','o','a','t',0x20,'3','2',0x00};
@@ -87,41 +87,41 @@ static double inv_randmax  = 1.0 / RAND_MAX;
 
 
 /* we need the standard Windows defs, when compiling on other platforms.
-   <windows.h> defines _INC_WINDOWS 
+   <windows.h> defines _INC_WINDOWS
  */
 #ifndef _INC_WINDOWS
 
 #define WAVE_FORMAT_PCM			(0x0001)
 
-typedef struct _GUID 
-{ 
-    unsigned int        Data1; 
-    unsigned short       Data2; 
-    unsigned short       Data3; 
-    unsigned char        Data4[8]; 
-} GUID; 
+typedef struct _GUID
+{
+    unsigned int        Data1;
+    unsigned short       Data2;
+    unsigned short       Data3;
+    unsigned char        Data4[8];
+} GUID;
 
 
 typedef struct  {
-	WORD  wFormatTag; 
-    WORD  nChannels; 
-    DWORD nSamplesPerSec; 
-    DWORD nAvgBytesPerSec; 
-    WORD  nBlockAlign; 
-    WORD  wBitsPerSample; 
+	WORD  wFormatTag;
+    WORD  nChannels;
+    DWORD nSamplesPerSec;
+    DWORD nAvgBytesPerSec;
+    WORD  nBlockAlign;
+    WORD  wBitsPerSample;
 
 } WAVEFORMAT;
 
 
-typedef struct { 
-    WORD  wFormatTag; 
-    WORD  nChannels; 
-    DWORD nSamplesPerSec; 
-    DWORD nAvgBytesPerSec; 
-    WORD  nBlockAlign; 
-    WORD  wBitsPerSample; 
-    WORD  cbSize; 
-} WAVEFORMATEX; 
+typedef struct {
+    WORD  wFormatTag;
+    WORD  nChannels;
+    DWORD nSamplesPerSec;
+    DWORD nAvgBytesPerSec;
+    WORD  nBlockAlign;
+    WORD  wBitsPerSample;
+    WORD  cbSize;
+} WAVEFORMATEX;
 #endif
 
 
@@ -165,7 +165,7 @@ static const GUID  KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = {0x00000003,0x0000,0x0010,
 								0x9b,
 								0x71}};
 
-static const GUID SUBTYPE_AMBISONIC_B_FORMAT_PCM = { 0x00000001, 0x0721, 0x11d3, 
+static const GUID SUBTYPE_AMBISONIC_B_FORMAT_PCM = { 0x00000001, 0x0721, 0x11d3,
 												{ 0x86,
 												0x44,
 												0xc8,
@@ -176,7 +176,7 @@ static const GUID SUBTYPE_AMBISONIC_B_FORMAT_PCM = { 0x00000001, 0x0721, 0x11d3,
 												0x0 } };
 
 
-static const GUID SUBTYPE_AMBISONIC_B_FORMAT_IEEE_FLOAT = { 0x00000003, 0x0721, 0x11d3, 
+static const GUID SUBTYPE_AMBISONIC_B_FORMAT_IEEE_FLOAT = { 0x00000003, 0x0721, 0x11d3,
 												{ 0x86,
 												0x44,
 												0xc8,
@@ -207,7 +207,7 @@ typedef struct psffile {
 	float			rescale_fac;
 	psf_format		riff_format;
 	/*int				isSeekable;*/	 /* any use ? */
-	int			    is_little_endian;		
+	int			    is_little_endian;
 	psf_stype		samptype;		/* = nBlockAlign / nChannels */
 	fpos_t			dataoffset;		/* = sizeof(header) */
 	fpos_t			fmtoffset;
@@ -241,7 +241,7 @@ int psf_init(void)
 {
 	int i;
 
-	for(i=0;i < psf_maxfiles;i++)		
+	for(i=0;i < psf_maxfiles;i++)
 		psf_files[i] = NULL;
 	/* do any other inits we need.... */
 	return 0;
@@ -250,11 +250,11 @@ int psf_init(void)
 /* return zero for success, non-zero for error*/
 static int psf_release_file(PSFFILE *psff)
 {
-	int rc = 0;	
+	int rc = 0;
 #ifdef _DEBUG
 	assert(psff);
 #endif
-      
+
    if(psff->file){
        rc = fclose(psff->file);
        if(rc)
@@ -268,7 +268,7 @@ static int psf_release_file(PSFFILE *psff)
    if(psff->pPeaks) {
        free(psff->pPeaks);
        psff->pPeaks = NULL;
-   }       
+   }
    return rc;
 }
 
@@ -277,7 +277,7 @@ int psf_finish(void)
 {
 	int i,rc = 0;
 	for(i=0;i < psf_maxfiles;i++) {
-		if(psf_files[i]!= NULL){			
+		if(psf_files[i]!= NULL){
 #ifdef _DEBUG
 			printf("sfile %s not closed: closing.\n",psf_files[i]->filename);
 #endif
@@ -285,7 +285,7 @@ int psf_finish(void)
             /* an alternative is to continue, and write error info to a logfile */
             if(rc)
                 return rc;
-				
+
 		}
 		free(psf_files[i]);
 		psf_files[i] = NULL;
@@ -297,24 +297,24 @@ int psf_finish(void)
 /* thanks to the SNDAN programmers for this! */
 /* return 0 for big-endian machine, 1 for little-endian machine*/
 /* probably no good for 16bit swapping though */
-static int byte_order()					
-{						    
+static int byte_order()
+{
   int   one = 1;
   char* endptr = (char *) &one;
   return (*endptr);
 }
 
- 
+
 static void fmtSwapBytes(PSFFILE *sfdat)
 {
 	WAVEFORMATEX  *pfmt	= (WAVEFORMATEX *) &(sfdat->fmt.Format);
-	
+
 	pfmt->wFormatTag	= (WORD) REVWBYTES(pfmt->wFormatTag);
 	pfmt->nChannels		= (WORD) REVWBYTES(pfmt->nChannels);
 	pfmt->nSamplesPerSec	= REVDWBYTES(pfmt->nSamplesPerSec);
 	pfmt->nAvgBytesPerSec	= REVDWBYTES(pfmt->nAvgBytesPerSec);
 	pfmt->nBlockAlign	= (WORD) REVWBYTES(pfmt->nBlockAlign);
-	pfmt->wBitsPerSample	= (WORD) REVWBYTES(pfmt->wBitsPerSample);	
+	pfmt->wBitsPerSample	= (WORD) REVWBYTES(pfmt->wBitsPerSample);
 }
 
 static void fmtExSwapBytes(PSFFILE *sfdat)
@@ -331,7 +331,7 @@ static void fmtExSwapBytes(PSFFILE *sfdat)
 	pfmt->cbSize			= (WORD) REVWBYTES(pfmt->cbSize);
     pfmtEx->Samples.wValidBitsPerSample = (WORD) REVWBYTES(pfmtEx->Samples.wValidBitsPerSample);
     pfmtEx->dwChannelMask     = (DWORD) REVDWBYTES(pfmtEx->dwChannelMask);
-	/* we swap numeric fields of GUID, but not the char string */		
+	/* we swap numeric fields of GUID, but not the char string */
 	pfmtEx->SubFormat.Data1 = REVDWBYTES(pfmtEx->SubFormat.Data1);
 	pfmtEx->SubFormat.Data2 = (WORD) REVWBYTES(pfmtEx->SubFormat.Data2);
 	pfmtEx->SubFormat.Data3 = (WORD) REVWBYTES(pfmtEx->SubFormat.Data3);
@@ -340,7 +340,7 @@ static void fmtExSwapBytes(PSFFILE *sfdat)
 static int check_guid(PSFFILE *sfdat)
 {
 	/* expects a GUID to be loaded already into sfdat.*/
-	if(sfdat->riff_format != PSF_WAVE_EX)		
+	if(sfdat->riff_format != PSF_WAVE_EX)
 		return 1;
 
 	if(compare_guids(&(sfdat->fmt.SubFormat),&(KSDATAFORMAT_SUBTYPE_PCM))){
@@ -368,14 +368,14 @@ static int check_guid(PSFFILE *sfdat)
 	if(compare_guids(&(sfdat->fmt.SubFormat),&(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT)))
 		if(sfdat->fmt.Format.wBitsPerSample == 32) {
 			sfdat->samptype = PSF_SAMP_IEEE_FLOAT;
-			return 0;	
+			return 0;
 		}
 	/* add other recognised GUIDs here... */
     if(compare_guids(&(sfdat->fmt.SubFormat),&(SUBTYPE_AMBISONIC_B_FORMAT_IEEE_FLOAT)))
 		if(sfdat->fmt.Format.wBitsPerSample == 32) {
 			sfdat->samptype = PSF_SAMP_IEEE_FLOAT;
 			sfdat->chformat = MC_BFMT;
-			return 0;	
+			return 0;
 		}
 	if(compare_guids(&(sfdat->fmt.SubFormat),&(SUBTYPE_AMBISONIC_B_FORMAT_PCM))) {
 		switch(sfdat->fmt.Format.wBitsPerSample){
@@ -400,17 +400,17 @@ static int check_guid(PSFFILE *sfdat)
 		sfdat->chformat = MC_BFMT;
 		return 0;
 	}
-	return 1;	
+	return 1;
 }
 /* return actual validbits */
 static int psf_bitsize(psf_stype type)
 {
 	int size = 0;
-	switch(type){	
+	switch(type){
 	case(PSF_SAMP_16):
 		size = 16;
 		break;
-	case (PSF_SAMP_24):	
+	case (PSF_SAMP_24):
 		size = 24;
 		break;
 	case(PSF_SAMP_32):
@@ -432,11 +432,11 @@ static int psf_wordsize(psf_stype type)
 		break;
 	case (PSF_SAMP_24):
 		size = 3;
-		break;	
+		break;
 	case(PSF_SAMP_32):
 	case(PSF_SAMP_IEEE_FLOAT):
 		size = 4;
-		break;		
+		break;
 	default:
 		break;
 	}
@@ -529,7 +529,7 @@ strnicmp(const char *a, const char *b, const int length)
 
 static PSFFILE *psf_newFile(const PSF_PROPS *props)
 {
-	PSFFILE *sfdat;	
+	PSFFILE *sfdat;
 
 	if(props){
 		if(props->srate <=0)
@@ -554,7 +554,7 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 	sfdat->file			= NULL;
 	sfdat->filename			= NULL;
 	sfdat->nFrames			= 0;
-	sfdat->curframepos		= 0;				
+	sfdat->curframepos		= 0;
 	sfdat->isRead			= 1;				/* OK. who knows?    */
 	/* or use platform default format.... */
 	sfdat->riff_format		= props ? props->format : PSF_STDWAVE;		/* almost certainly! */
@@ -562,7 +562,7 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 	sfdat->clip_floats		= 1;
 	sfdat->rescale			= 0;
 	sfdat->rescale_fac		= 1.0f;
-	sfdat->is_little_endian	= byte_order();			
+	sfdat->is_little_endian	= byte_order();
 	sfdat->samptype			= props ? props->samptype : PSF_SAMP_16;		/* reasonable...     */
 	POS64(sfdat->dataoffset)		= 0;
 	POS64(sfdat->fmtoffset)		= 0;
@@ -570,15 +570,15 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 	sfdat->chformat			= props ? props->chformat : STDWAVE;
 	/*setup Format */
 	if(props)
-		sfdat->fmt.Format.wFormatTag  = (WORD) (props->samptype == PSF_SAMP_IEEE_FLOAT ?  WAVE_FORMAT_IEEE_FLOAT : WAVE_FORMAT_PCM); 
+		sfdat->fmt.Format.wFormatTag  = (WORD) (props->samptype == PSF_SAMP_IEEE_FLOAT ?  WAVE_FORMAT_IEEE_FLOAT : WAVE_FORMAT_PCM);
 	else
 		sfdat->fmt.Format.wFormatTag  = WAVE_FORMAT_PCM;
-    sfdat->fmt.Format.nChannels		  = (WORD) (props ?  props->chans : 1); 
-    sfdat->fmt.Format.nSamplesPerSec  = props ? props->srate : 44100;      
-    sfdat->fmt.Format.nBlockAlign	  = (WORD) (props  ?  sfdat->fmt.Format.nChannels * psf_wordsize(props->samptype) : sfdat->fmt.Format.nChannels * sizeof(short)); 
+    sfdat->fmt.Format.nChannels		  = (WORD) (props ?  props->chans : 1);
+    sfdat->fmt.Format.nSamplesPerSec  = props ? props->srate : 44100;
+    sfdat->fmt.Format.nBlockAlign	  = (WORD) (props  ?  sfdat->fmt.Format.nChannels * psf_wordsize(props->samptype) : sfdat->fmt.Format.nChannels * sizeof(short));
     sfdat->fmt.Format.wBitsPerSample  = (WORD) (props ?  psf_bitsize(props->samptype)  : sizeof(short) * BITS_PER_BYTE);
-	sfdat->fmt.Format.nAvgBytesPerSec = sfdat->fmt.Format.nSamplesPerSec  
-				 *sfdat->fmt.Format.nChannels 
+	sfdat->fmt.Format.nAvgBytesPerSec = sfdat->fmt.Format.nSamplesPerSec
+				 *sfdat->fmt.Format.nChannels
 				 * (sfdat->fmt.Format.wBitsPerSample / BITS_PER_BYTE);
 	sfdat->pPeaks			= NULL;
 	sfdat->peaktime			= 0;
@@ -592,16 +592,16 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 
 	if(props && (props->format == PSF_WAVE_EX)) {
 		sfdat->fmt.Format.cbSize = 22;
-		/* NB we will set the GUID from wFormatTag in waveExWriteHeader() */		
+		/* NB we will set the GUID from wFormatTag in waveExWriteHeader() */
 		/* should really flag an error if user sets this */
 		if(sfdat->chformat==STDWAVE)
 			sfdat->chformat = MC_STD;
 
 		/* set wavex speaker mask */
 		/* TODO: support custom speaker masks, wordsizes, etc */
-		switch(sfdat->chformat){			
+		switch(sfdat->chformat){
 		case MC_MONO:
-			if(props->chans != 1){			
+			if(props->chans != 1){
 				//rsferrstr = "conflicting channel configuration for WAVE-EX file";
 				free(sfdat);
 				return NULL;
@@ -609,7 +609,7 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 			sfdat->fmt.dwChannelMask = SPKRS_MONO;
 			break;
 		case MC_STEREO:
-			if(props->chans != 2){			
+			if(props->chans != 2){
 				//rsferrstr = "conflicting channel configuration for WAVE-EX file";
 				free(sfdat);
 				return NULL;
@@ -617,13 +617,13 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 			sfdat->fmt.dwChannelMask = SPKRS_STEREO;
 			break;
 		case MC_QUAD:
-			if(props->chans != 4){				
+			if(props->chans != 4){
 				//rsferrstr = "conflicting channel configuration for WAVE-EX file";
 				free(sfdat);
 				return NULL;
 			}
 			sfdat->fmt.dwChannelMask = SPKRS_GENERIC_QUAD;
-			break;	
+			break;
 		case MC_LCRS:
 			if(props->chans != 4){
 				free(sfdat);
@@ -632,15 +632,15 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 			sfdat->fmt.dwChannelMask = SPKRS_SURROUND_LCRS;
 			break;
 		case MC_DOLBY_5_1:
-			if(props->chans != 6){			
+			if(props->chans != 6){
 				//rsferrstr = "conflicting channel configuration for WAVE-EX file";
 				free(sfdat);
 				return NULL;
 			}
-			sfdat->fmt.dwChannelMask = SPKRS_DOLBY5_1;	   
+			sfdat->fmt.dwChannelMask = SPKRS_DOLBY5_1;
 			break;
         case MC_SURR_5_0:
-            if(props->chans != 5){			
+            if(props->chans != 5){
 				//rsferrstr = "conflicting channel configuration for WAVE-EX file";
 				free(sfdat);
 				return NULL;
@@ -648,7 +648,7 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 			sfdat->fmt.dwChannelMask = SPKRS_SURR_5_0;
             break;
         case MC_SURR_7_1:
-            if(props->chans != 8){			
+            if(props->chans != 8){
 				//rsferrstr = "conflicting channel configuration for WAVE-EX file";
 				free(sfdat);
 				return NULL;
@@ -656,7 +656,7 @@ static PSFFILE *psf_newFile(const PSF_PROPS *props)
 			sfdat->fmt.dwChannelMask = SPKRS_7_1;
             break;
 		default:
-			/*MC_STD, MC_BFMT */			
+			/*MC_STD, MC_BFMT */
 			sfdat->fmt.dwChannelMask = SPKRS_UNASSIGNED;
 			break;
 		}
@@ -674,10 +674,10 @@ static int wavUpdate(PSFFILE *sfdat)
 #ifdef _DEBUG
 	assert(sfdat);
 	assert(sfdat->file);
-	assert(POS64(sfdat->dataoffset) != 0);	
-#endif		
+	assert(POS64(sfdat->dataoffset) != 0);
+#endif
     POS64(bytepos) = sizeof(int);
-	if((fsetpos(sfdat->file,&bytepos))==0) {			 
+	if((fsetpos(sfdat->file,&bytepos))==0) {
 		riffsize = (sfdat->nFrames * sfdat->fmt.Format.nBlockAlign) +  (MYLONG) POS64(sfdat->dataoffset);
 		riffsize -= 2 * sizeof(DWORD);
 		if(!sfdat->is_little_endian)
@@ -690,7 +690,7 @@ static int wavUpdate(PSFFILE *sfdat)
 	if(sfdat->pPeaks){
 		if(POS64(sfdat->peakoffset)==0)
 			return PSF_E_BADARG;
-		
+
 		/*do byterev if necessary...*/
 		if((fsetpos(sfdat->file,&sfdat->peakoffset))==0){
 			/*set current time*/
@@ -714,12 +714,12 @@ static int wavUpdate(PSFFILE *sfdat)
 		    return PSF_E_CANT_SEEK;
 	}
 	POS64(bytepos) = POS64(sfdat->dataoffset) -  sizeof(int);
-	if((fsetpos(sfdat->file,&bytepos))==0) {			
+	if((fsetpos(sfdat->file,&bytepos))==0) {
 		datasize = sfdat->nFrames * sfdat->fmt.Format.nBlockAlign;
 		if(!sfdat->is_little_endian)
 			datasize = REVDWBYTES(datasize);
 		if(fwrite((char *) & datasize,sizeof(DWORD),1,sfdat->file) != 1)
-			return PSF_E_CANT_WRITE;	
+			return PSF_E_CANT_WRITE;
 	}
 	if(fseek(sfdat->file,0,SEEK_END)){
 		/*DBGFPRINTF((stderr,"wavUpdate: error reseeking to end of file\n"));*/
@@ -732,7 +732,7 @@ static int wavUpdate(PSFFILE *sfdat)
 /* ditto for AIFF... */
 
 /* NB: the AIFF spec is unclear on type of size field. We decide on unsigned long (DWORD) here;
-   on the principle that a COMM chunk with an unsigned long nSampleFrames really needs the 
+   on the principle that a COMM chunk with an unsigned long nSampleFrames really needs the
    chunk size to be unsigned long too!.
 
   */
@@ -751,7 +751,7 @@ static int aiffUpdate(PSFFILE *sfdat)
 	if((fsetpos(sfdat->file,&bytepos))==0) {
 		/* RWD 26:10:2002 */
             /* RWD Nov 2003: dataoffset includes first two DWORDS in file, which must not be counted here! */
-		aiffsize = (sfdat->nFrames * sfdat->fmt.Format.nBlockAlign) 
+		aiffsize = (sfdat->nFrames * sfdat->fmt.Format.nBlockAlign)
             + (MYLONG) POS64(sfdat->dataoffset) - (2 * sizeof(DWORD));
 		if(sfdat->is_little_endian)
 			aiffsize = REVDWBYTES(aiffsize);
@@ -759,10 +759,10 @@ static int aiffUpdate(PSFFILE *sfdat)
 			return PSF_E_CANT_WRITE;
 	}
 	else
-		return PSF_E_CANT_SEEK;	
+		return PSF_E_CANT_SEEK;
     POS64(bytepos)  = POS64(sfdat->fmtoffset) + sizeof(WORD);
 	if((fsetpos(sfdat->file,&bytepos))==0) {
-		frames = sfdat->nFrames;		
+		frames = sfdat->nFrames;
 		if(sfdat->is_little_endian)
 			frames = REVDWBYTES(frames);
 		if(fwrite((char *) &frames,sizeof(DWORD),1,sfdat->file) != 1)
@@ -770,10 +770,10 @@ static int aiffUpdate(PSFFILE *sfdat)
 	}
 	else
 		return PSF_E_CANT_SEEK;
-	if(sfdat->pPeaks){		
+	if(sfdat->pPeaks){
         if(POS64(sfdat->peakoffset)==0)
 			return PSF_E_BADARG;
-		
+
 		/*do byterev if necessary...*/
 		if((fsetpos(sfdat->file,&sfdat->peakoffset))==0){
 			/*set current time*/
@@ -795,16 +795,16 @@ static int aiffUpdate(PSFFILE *sfdat)
 		}
 		else
 			return PSF_E_CANT_SEEK;
-	}	
+	}
     POS64(bytepos) = POS64(sfdat->dataoffset) - (3 * sizeof(int));
-	if((fsetpos(sfdat->file,&bytepos))==0) {			
+	if((fsetpos(sfdat->file,&bytepos))==0) {
 		datasize = sfdat->nFrames * sfdat->fmt.Format.nBlockAlign;
 		datasize += 2* sizeof(DWORD);	/* add offset and blocksize fields */
 		rev_datasize = datasize; /* preserve this for the seek later on */
 		if(sfdat->is_little_endian)
 			rev_datasize = REVDWBYTES(datasize);
 		if(fwrite((char *) & rev_datasize,sizeof(DWORD),1,sfdat->file) != 1)
-			return PSF_E_CANT_WRITE;	
+			return PSF_E_CANT_WRITE;
 	}
 	else
 		return PSF_E_CANT_SEEK;
@@ -815,9 +815,9 @@ static int aiffUpdate(PSFFILE *sfdat)
 	}
 	if(fgetpos(sfdat->file,&filesize))
 	      return PSF_E_CANT_SEEK;
-#ifdef _DEBUG	
+#ifdef _DEBUG
     assert(POS64(filesize) == POS64(bytepos));
-#endif	
+#endif
     if(POS64(filesize) % 2)
 		if(fwrite(&pad,sizeof(unsigned char),1,sfdat->file) != 1)
 			return PSF_E_CANT_WRITE;
@@ -829,7 +829,7 @@ static int aiffUpdate(PSFFILE *sfdat)
 /* internal write func: return 0 for success */
 static int wavDoWrite(PSFFILE *sfdat, const void* buf, DWORD nBytes)
 {
-	
+
 	DWORD written = 0;
 	if(sfdat==NULL || buf==NULL)
 		return PSF_E_BADARG;
@@ -848,7 +848,7 @@ static int wavDoWrite(PSFFILE *sfdat, const void* buf, DWORD nBytes)
 
 static int wavDoRead(PSFFILE *sfdat, void* buf, DWORD nBytes)
 {
-	
+
 	DWORD got = 0;
 	if(sfdat==NULL || buf==NULL)
 		return PSF_E_BADARG;
@@ -894,7 +894,7 @@ static int wavWriteHeader(PSFFILE *sfdat)
 		size = REVDWBYTES(size);
 	else
 		tag = REVDWBYTES(tag);
-	
+
 
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
 		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))
@@ -908,7 +908,7 @@ static int wavWriteHeader(PSFFILE *sfdat)
 
 	pfmt = &(sfdat->fmt.Format);
 
-	tag = TAG('f','m','t',' ');	
+	tag = TAG('f','m','t',' ');
 	size = sizeof(WAVEFORMAT);
 	if(sfdat->samptype==PSF_SAMP_IEEE_FLOAT)
 		size += sizeof(WORD);		  /* for cbSize: WAVEOFRMATEX */
@@ -919,12 +919,12 @@ static int wavWriteHeader(PSFFILE *sfdat)
 	else
 		tag = REVDWBYTES(tag);
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
-		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))		
+		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))
 		return PSF_E_CANT_WRITE;
         if(fgetpos(sfdat->file,&bytepos))
 	    return PSF_E_CANT_SEEK;
 	sfdat->fmtoffset = bytepos;
-	
+
 	if(wavDoWrite(sfdat,(char *)pfmt,sizeof(WAVEFORMAT)))
 		return PSF_E_CANT_WRITE;
 	/*add cbSize if floatsams */
@@ -935,12 +935,12 @@ static int wavWriteHeader(PSFFILE *sfdat)
         if(!sfdat->is_little_endian){
             fmtSwapBytes(sfdat);
         }
-        
+
 	if(sfdat->pPeaks){
 		DWORD version = 1, now = 0;
 		peaks = sfdat->pPeaks;
-		
-		tag = TAG('P','E','A','K');		
+
+		tag = TAG('P','E','A','K');
 		size = 2 * sizeof(DWORD) + sizeof(PSF_CHPEAK) * pfmt->nChannels;
 		if(!sfdat->is_little_endian){
 			size = REVDWBYTES(size);
@@ -960,26 +960,26 @@ static int wavWriteHeader(PSFFILE *sfdat)
 		if(wavDoWrite(sfdat,(char *) &now,sizeof(DWORD))
 			|| wavDoWrite(sfdat,(char *) peaks, sizeof(PSF_CHPEAK) * sfdat->fmt.Format.nChannels))
 			return PSF_E_CANT_WRITE;
-	}	
-	tag = TAG('d','a','t','a');	
-	size = 0;	
+	}
+	tag = TAG('d','a','t','a');
+	size = 0;
 	if(sfdat->is_little_endian)
 		tag = REVDWBYTES(tag);
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
-		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))		
+		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))
 		return PSF_E_CANT_WRITE;
 	if(fgetpos(sfdat->file,&bytepos))
 	    return PSF_E_CANT_SEEK;
-	sfdat->dataoffset = bytepos;	
+	sfdat->dataoffset = bytepos;
 	return PSF_E_NOERROR;
 }
 
 
 static int waveExWriteHeader(PSFFILE *sfdat)
 {
-	DWORD tag,size;	
+	DWORD tag,size;
 	WAVEFORMATEXTENSIBLE *pfmt;
-	PSF_CHPEAK *peaks;	
+	PSF_CHPEAK *peaks;
 	GUID *pGuid = NULL;
 	fpos_t bytepos;
 #ifdef _DEBUG
@@ -995,18 +995,18 @@ static int waveExWriteHeader(PSFFILE *sfdat)
 		memset((char *)sfdat->pPeaks,0,sizeof(PSF_CHPEAK) * sfdat->fmt.Format.nChannels);
 	/* complete WAVE-EX format fields: */
     if(sfdat->chformat==MC_BFMT){
-        if(sfdat->samptype== PSF_SAMP_IEEE_FLOAT){				
+        if(sfdat->samptype== PSF_SAMP_IEEE_FLOAT){
             pGuid = (GUID *)  &SUBTYPE_AMBISONIC_B_FORMAT_IEEE_FLOAT;
         }
-        else{		
+        else{
             pGuid =(GUID *) &SUBTYPE_AMBISONIC_B_FORMAT_PCM;
         }
-        
+
     }else {
-        if(sfdat->fmt.Format.wFormatTag==  WAVE_FORMAT_IEEE_FLOAT){				
+        if(sfdat->fmt.Format.wFormatTag==  WAVE_FORMAT_IEEE_FLOAT){
             pGuid = (GUID *)  &KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
         }
-        else{		
+        else{
             pGuid =(GUID *) &KSDATAFORMAT_SUBTYPE_PCM;
         }
     }
@@ -1027,8 +1027,8 @@ static int waveExWriteHeader(PSFFILE *sfdat)
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD)))
 		return PSF_E_CANT_WRITE;
 	pfmt = &(sfdat->fmt);
-	tag = TAG('f','m','t',' ');	
-	size = sizeof_WFMTEX;	
+	tag = TAG('f','m','t',' ');
+	size = sizeof_WFMTEX;
 	if(!sfdat->is_little_endian){
 		size = REVDWBYTES(size);
 		fmtExSwapBytes(sfdat);
@@ -1036,20 +1036,20 @@ static int waveExWriteHeader(PSFFILE *sfdat)
 	else
 		tag = REVDWBYTES(tag);
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
-		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))		
+		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))
 		return PSF_E_CANT_WRITE;
 	if(fgetpos(sfdat->file,&bytepos))
 	    return PSF_E_CANT_SEEK;
 	sfdat->fmtoffset = bytepos;
 	/* write fmt elementwise, to avoid C alignment traps with WORD */
 	/* 16byte format...*/
-	if(wavDoWrite(sfdat,(char *)pfmt,sizeof(WAVEFORMAT))	
+	if(wavDoWrite(sfdat,(char *)pfmt,sizeof(WAVEFORMAT))
 	/** cbSize... */
-	||wavDoWrite(sfdat,(char *) &(pfmt->Format.cbSize),sizeof(WORD))	
+	||wavDoWrite(sfdat,(char *) &(pfmt->Format.cbSize),sizeof(WORD))
 	/* validbits... */
-	||wavDoWrite(sfdat,(char *) &(pfmt->Samples.wValidBitsPerSample),sizeof(WORD))	
+	||wavDoWrite(sfdat,(char *) &(pfmt->Samples.wValidBitsPerSample),sizeof(WORD))
 	/* ChannelMask .... */
-	||wavDoWrite(sfdat,(char *) &(pfmt->dwChannelMask),sizeof(DWORD))		
+	||wavDoWrite(sfdat,(char *) &(pfmt->dwChannelMask),sizeof(DWORD))
 	/*  and the GUID */
 	||wavDoWrite(sfdat,(char *) &(pfmt->SubFormat),sizeof(GUID)))
 		return PSF_E_CANT_WRITE;
@@ -1059,9 +1059,9 @@ static int waveExWriteHeader(PSFFILE *sfdat)
         }
 	if(sfdat->pPeaks){
 		DWORD version = 1, now = 0;
-		
-        peaks = sfdat->pPeaks;		
-		tag = TAG('P','E','A','K');		
+
+        peaks = sfdat->pPeaks;
+		tag = TAG('P','E','A','K');
 		size = 2 * sizeof(DWORD) + sizeof(PSF_CHPEAK) * pfmt->Format.nChannels;
 		if(!sfdat->is_little_endian){
 			size = REVDWBYTES(size);
@@ -1080,13 +1080,13 @@ static int waveExWriteHeader(PSFFILE *sfdat)
 			|| wavDoWrite(sfdat,(char *) peaks, sizeof(PSF_CHPEAK) * sfdat->fmt.Format.nChannels))
 			return PSF_E_CANT_WRITE;
 	}
-	
-	tag = TAG('d','a','t','a');	
-	size = 0;	
+
+	tag = TAG('d','a','t','a');
+	size = 0;
 	if(sfdat->is_little_endian)
 		tag = REVDWBYTES(tag);
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
-		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))		
+		|| wavDoWrite(sfdat,(char *)&size,sizeof(DWORD)))
 		return PSF_E_CANT_WRITE;
 	if(fgetpos(sfdat->file,&bytepos))
 	    return PSF_E_CANT_SEEK;
@@ -1096,8 +1096,8 @@ static int waveExWriteHeader(PSFFILE *sfdat)
 
 static int aiffWriteHeader(PSFFILE *sfdat)
 {
-	DWORD tag,size;		
-	PSF_CHPEAK *peaks;	
+	DWORD tag,size;
+	PSF_CHPEAK *peaks;
 	DWORD dwData,offset,blocksize;
 	unsigned char ieee[10];
 	WORD wData;
@@ -1120,7 +1120,7 @@ static int aiffWriteHeader(PSFFILE *sfdat)
 	size = 0;
 
 	if(sfdat->is_little_endian) {
-		size = REVDWBYTES(size);	
+		size = REVDWBYTES(size);
 		tag = REVDWBYTES(tag);
 	}
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
@@ -1135,7 +1135,7 @@ static int aiffWriteHeader(PSFFILE *sfdat)
 	tag = TAG('C','O','M','M');
 	size = 18;
 	if(sfdat->is_little_endian){
-		size = REVDWBYTES(size);	
+		size = REVDWBYTES(size);
 		tag = REVDWBYTES(tag);
 	}
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
@@ -1161,14 +1161,14 @@ static int aiffWriteHeader(PSFFILE *sfdat)
 	if(wavDoWrite(sfdat,(char *)&wData,sizeof(WORD)))
 		return PSF_E_CANT_WRITE;
 	double_to_ieee_80((double)sfdat->fmt.Format.nSamplesPerSec,ieee);
-	
+
 	if(wavDoWrite(sfdat,ieee,10))
 		return PSF_E_CANT_WRITE;
 	if(sfdat->pPeaks){
 		DWORD version = 1, now = 0;
 		peaks = sfdat->pPeaks;
-		
-		tag = TAG('P','E','A','K');		
+
+		tag = TAG('P','E','A','K');
 		size = 2 * sizeof(DWORD) + sizeof(PSF_CHPEAK) * sfdat->fmt.Format.nChannels;
 		if(sfdat->is_little_endian){
 			size = REVDWBYTES(size);
@@ -1206,8 +1206,8 @@ static int aiffWriteHeader(PSFFILE *sfdat)
 
 static int aifcWriteHeader(PSFFILE *sfdat)
 {
-	DWORD tag,size;		
-	PSF_CHPEAK *peaks;	
+	DWORD tag,size;
+	PSF_CHPEAK *peaks;
 	DWORD dwData,offset,blocksize,aifcver = AIFC_VERSION_1,ID_compression;
 	/*assume 32bit floats, but we may be asked to use aifc for integer formats too*/
 	char *str_compressed = (char *) aifc_floatstring;
@@ -1240,7 +1240,7 @@ static int aifcWriteHeader(PSFFILE *sfdat)
 	size = 0;
 
 	if(sfdat->is_little_endian) {
-		size = REVDWBYTES(size);	
+		size = REVDWBYTES(size);
 		tag = REVDWBYTES(tag);
 	}
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
@@ -1255,7 +1255,7 @@ static int aifcWriteHeader(PSFFILE *sfdat)
 	tag = TAG('F','V','E','R');
 	size = sizeof(DWORD);
 	if(sfdat->is_little_endian){
-		size = REVDWBYTES(size);	
+		size = REVDWBYTES(size);
 		tag = REVDWBYTES(tag);
 		aifcver = REVDWBYTES(aifcver);
 	}
@@ -1267,7 +1267,7 @@ static int aifcWriteHeader(PSFFILE *sfdat)
 	tag = TAG('C','O','M','M');
 	size = 22 + pstring_size;
 	if(sfdat->is_little_endian){
-		size = REVDWBYTES(size);	
+		size = REVDWBYTES(size);
 		tag = REVDWBYTES(tag);
 	}
 	if(wavDoWrite(sfdat,(char *)&tag,sizeof(DWORD))
@@ -1293,7 +1293,7 @@ static int aifcWriteHeader(PSFFILE *sfdat)
 	if(wavDoWrite(sfdat,(char *)&wData,sizeof(WORD)))
 		return PSF_E_CANT_WRITE;
 	double_to_ieee_80((double)sfdat->fmt.Format.nSamplesPerSec,ieee);
-	
+
 	if(wavDoWrite(sfdat,ieee,10))
 		return PSF_E_CANT_WRITE;
 	/*AIFC bits */
@@ -1307,8 +1307,8 @@ static int aifcWriteHeader(PSFFILE *sfdat)
 	if(sfdat->pPeaks){
 		DWORD version = 1, now = 0;
 
-		peaks = sfdat->pPeaks;		
-		tag = TAG('P','E','A','K');		
+		peaks = sfdat->pPeaks;
+		tag = TAG('P','E','A','K');
 		size = 2 * sizeof(DWORD) + sizeof(PSF_CHPEAK) * sfdat->fmt.Format.nChannels;
 		if(sfdat->is_little_endian){
 			size = REVDWBYTES(size);
@@ -1344,13 +1344,13 @@ static int aifcWriteHeader(PSFFILE *sfdat)
 }
 
 /* create soundfile. return descriptor, or some PSF_error value < 0 */
-/* supported clipping or non-clipping of floats to 0dbFS, 
+/* supported clipping or non-clipping of floats to 0dbFS,
    minimum header (or PEAK), and RDWR or RDONLY (but last not implemented yet!) */
 /* we expect full format info to be set in props */
 /* I want to offer share-read access (easy with WIN32), but can't with  ANSI! */
 /* possible TODO:  enforce non-destructive by e.g. rejecting create on existing file */
 int psf_sndCreate(const char *path,const PSF_PROPS *props,int clip_floats,int minheader, int mode)
-{		
+{
 	int i,rc = PSF_E_UNSUPPORTED;
 	psf_format fmt;
 	PSFFILE *sfdat;
@@ -1363,15 +1363,15 @@ int psf_sndCreate(const char *path,const PSF_PROPS *props,int clip_floats,int mi
 		if(psf_files[i] == NULL)
 			break;
 	}
-	if(i==psf_maxfiles)		
+	if(i==psf_maxfiles)
 		return PSF_E_TOOMANYFILES;
 
 	sfdat = psf_newFile(props);
-	if(sfdat == NULL)		
+	if(sfdat == NULL)
 		return PSF_E_NOMEM;
-	
-	sfdat->clip_floats = clip_floats;	
-	fmt = psf_getFormatExt(path);		
+
+	sfdat->clip_floats = clip_floats;
+	fmt = psf_getFormatExt(path);
 	if(fmt==PSF_FMT_UNKNOWN)
 		return PSF_E_UNSUPPORTED;
 	if(sfdat->samptype == PSF_SAMP_UNKNOWN)
@@ -1397,9 +1397,9 @@ int psf_sndCreate(const char *path,const PSF_PROPS *props,int clip_floats,int mi
 		DBGFPRINTF((stderr, "wavOpenWrite: cannot create '%s'\n", path));
         return PSF_E_CANT_OPEN;
 	}
-	
+
     strcpy(sfdat->filename, path);
-    sfdat->isRead = 0;    	
+    sfdat->isRead = 0;
 	sfdat->nFrames = 0;
 	/* force aif f/p data to go to aifc format */
 	if(sfdat->samptype==PSF_SAMP_IEEE_FLOAT && fmt==PSF_AIFF){
@@ -1414,18 +1414,18 @@ int psf_sndCreate(const char *path,const PSF_PROPS *props,int clip_floats,int mi
 	sfdat->riff_format = fmt;
 
 	switch(fmt){
-	case(PSF_STDWAVE):		
+	case(PSF_STDWAVE):
 		rc = wavWriteHeader(sfdat);
 		break;
 	case(PSF_AIFF):
-		
+
 		rc = aiffWriteHeader(sfdat);
 		break;
 	case(PSF_AIFC):
-		
+
 		rc = aifcWriteHeader(sfdat);
 		break;
-	case (PSF_WAVE_EX):		
+	case (PSF_WAVE_EX):
 		rc = waveExWriteHeader(sfdat);
 		break;
 	default:
@@ -1438,18 +1438,18 @@ int psf_sndCreate(const char *path,const PSF_PROPS *props,int clip_floats,int mi
 	psf_files[i] = sfdat;
 	return i;
 }
-	
+
 /* snd close:  automatically completes PEAK data when writing */
 /* return 0 for success */
 int psf_sndClose(int sfd)
 {
 	int rc = PSF_E_NOERROR;
 	PSFFILE *sfdat;
-	
+
 	if(sfd < 0 || sfd > psf_maxfiles)
-		return PSF_E_BADARG;	
-	sfdat  = psf_files[sfd];	
-#ifdef _DEBUG		
+		return PSF_E_BADARG;
+	sfdat  = psf_files[sfd];
+#ifdef _DEBUG
 	assert(sfdat->file);
 	assert(sfdat->filename);
 #endif
@@ -1476,15 +1476,15 @@ int psf_sndClose(int sfd)
 	    free(sfdat);
 	    psf_files[sfd]= NULL;
 	}
-	return rc;	
+	return rc;
 }
 
-/* write floats (multi-channel) framebuf to whichever target format. tracks PEAK data.*/ 
+/* write floats (multi-channel) framebuf to whichever target format. tracks PEAK data.*/
 /* bend over backwards not to modify source data */
 /* returns nFrames, or errval < 0 */
 int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 {
-	int chans,lsamp;	
+	int chans,lsamp;
 	DWORD i;
 	int j,do_reverse;
 	const float *pbuf = buf;
@@ -1494,12 +1494,12 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
-	
-#ifdef _DEBUG		
+
+#ifdef _DEBUG
 	assert(sfdat->file);
-	assert(sfdat->filename);	
+	assert(sfdat->filename);
 #endif
 
 	if(buf==NULL)
@@ -1509,7 +1509,7 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 	if(sfdat->isRead)
 		return PSF_E_FILE_READONLY;
 	chans = sfdat->fmt.Format.nChannels;
-	
+
 	switch(sfdat->riff_format){
 	case(PSF_STDWAVE):
 	case(PSF_WAVE_EX):
@@ -1527,8 +1527,8 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 	if(sfdat->lastop  == PSF_OP_READ)
 		fflush(sfdat->file);
 	switch(sfdat->samptype){
-	case(PSF_SAMP_IEEE_FLOAT):		
-		if(do_reverse){				
+	case(PSF_SAMP_IEEE_FLOAT):
+		if(do_reverse){
 			for(i=0; i < nFrames; i++){
 				for(j=0;j < chans; j++) {
 					fsamp = *pbuf;
@@ -1547,10 +1547,10 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}							
-			}			
+				}
+			}
 		}
-		else {			
+		else {
 			for(i=0; i < nFrames; i++, pbuf += chans){
 				for(j=0;j < chans; j++) {
 					fsamp = pbuf[j];
@@ -1562,18 +1562,18 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 					if(sfdat->pPeaks && (sfdat->pPeaks[j].val < absfsamp)){
 						sfdat->pPeaks[j].pos = sfdat->nFrames + i;
 						sfdat->pPeaks[j].val = absfsamp;
-					}					
-				}								
+					}
+				}
 			}
 			if(wavDoWrite(sfdat,(char *)buf,nFrames * chans * sizeof(float))){
 				DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
-				return PSF_E_CANT_WRITE;				
+				return PSF_E_CANT_WRITE;
 			}
 		}
 		break;
 	case(PSF_SAMP_16):
 		/* TODO: optimise all this with func pointers etc */
-		if(do_reverse){	
+		if(do_reverse){
 			short ssamp;
 			for(i=0; i < nFrames; i++){
 				for(j=0;j < chans; j++) {
@@ -1595,13 +1595,13 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}	
+				}
 			}
 		}
 		else {
 			short ssamp;
 			for(i=0; i < nFrames; i++, buf += chans){
-				for(j=0;j < chans; j++) {					 
+				for(j=0;j < chans; j++) {
 					fsamp = buf[j];
 					/* clip now! we may have a flag to rescale first...one day */
 					fsamp = min(fsamp,1.0f);
@@ -1615,17 +1615,17 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 						ssamp = (short) psf_round(fsamp * 32766.0 + 2.0 * trirand());
 					else
 						ssamp = (short) psf_round(fsamp * MAX_16BIT);
-					
+
 					if(wavDoWrite(sfdat,(char *) &ssamp,sizeof(short))){
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}			
-			}			
+				}
+			}
 		}
 		break;
-	case(PSF_SAMP_24):			 
-		if(do_reverse){            
+	case(PSF_SAMP_24):
+		if(do_reverse){
 			for(i=0; i < nFrames; i++){
 				for(j=0;j < chans; j++) {
 					fsamp = *buf++;
@@ -1637,7 +1637,7 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 						sfdat->pPeaks[j].pos = sfdat->nFrames + i;
 						sfdat->pPeaks[j].val = absfsamp;
 					}
-					lsamp = psf_round(fsamp * MAX_32BIT);					
+					lsamp = psf_round(fsamp * MAX_32BIT);
 					lsamp = REVDWBYTES(lsamp);
                     if(do_shift){
 						if(sfdat->is_little_endian)
@@ -1649,12 +1649,12 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}			
+				}
 			}
 		}
-		else {			
+		else {
 			for(i=0; i < nFrames; i++, buf += chans){
-				for(j=0;j < chans; j++) {					 
+				for(j=0;j < chans; j++) {
 					fsamp = buf[j];
 					/* clip now! we may have a flag to rescale first...one day */
 					fsamp = min(fsamp,1.0f);
@@ -1675,12 +1675,12 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}				
-			}			
+				}
+			}
 		}
 		break;
 	case(PSF_SAMP_32):
-		if(do_reverse){				
+		if(do_reverse){
 			for(i=0; i < nFrames; i++){
 				for(j=0;j < chans; j++) {
 					fsamp = *buf++;
@@ -1692,18 +1692,18 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 						sfdat->pPeaks[j].pos = sfdat->nFrames + i;
 						sfdat->pPeaks[j].val = absfsamp;
 					}
-					lsamp = psf_round(fsamp * MAX_32BIT );					
+					lsamp = psf_round(fsamp * MAX_32BIT );
 					lsamp = REVDWBYTES(lsamp);
 					if( wavDoWrite(sfdat,(char *) &lsamp,sizeof(int))){
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}		
+				}
 			}
 		}
-		else {			
+		else {
 			for(i=0; i < nFrames; i++, buf += chans){
-				for(j=0;j < chans; j++) {					 
+				for(j=0;j < chans; j++) {
 					fsamp = buf[j];
 					/* clip now! we may have a flag to rescale first...one day */
 					fsamp = min(fsamp,1.0f);
@@ -1714,31 +1714,31 @@ int psf_sndWriteFloatFrames(int sfd, const float *buf, DWORD nFrames)
 						sfdat->pPeaks[j].val = absfsamp;
 					}
 					lsamp = psf_round(fsamp * MAX_32BIT);
-					
+
 					if(wavDoWrite(sfdat,(char *) &lsamp,sizeof(int))){
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}			
-			}			
+				}
+			}
 		}
 		break;
 	default:
 		DBGFPRINTF((stderr, "wavOpenWrite: unsupported sample format\n"));
-		return PSF_E_UNSUPPORTED;		
+		return PSF_E_UNSUPPORTED;
 
 	}
     POS64(sfdat->lastwritepos) += nFrames;
 	sfdat->curframepos = (MYLONG) POS64(sfdat->lastwritepos);
 	sfdat->nFrames = max(sfdat->nFrames,(DWORD) POS64(sfdat->lastwritepos));
 /*	fflush(sfdat->file); */	/* ? may need this if reading/seeking as well as  write, etc */
-	return nFrames; 
-		
+	return nFrames;
+
 }
 
 int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 {
-	int chans,lsamp;	
+	int chans,lsamp;
 	DWORD i;
 	int j,do_reverse;
 	const double *pbuf = buf;
@@ -1748,11 +1748,11 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
-	sfdat  = psf_files[sfd];	
-#ifdef _DEBUG		
+
+	sfdat  = psf_files[sfd];
+#ifdef _DEBUG
 	assert(sfdat->file);
-	assert(sfdat->filename);	
+	assert(sfdat->filename);
 #endif
 	if(buf==NULL)
 		return PSF_E_BADARG;
@@ -1761,7 +1761,7 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 	if(sfdat->isRead)
 		return PSF_E_FILE_READONLY;
 	chans = sfdat->fmt.Format.nChannels;
-	
+
 	switch(sfdat->riff_format){
 	case(PSF_STDWAVE):
 	case(PSF_WAVE_EX):
@@ -1779,8 +1779,8 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 	if(sfdat->lastop  == PSF_OP_READ)
 		fflush(sfdat->file);
 	switch(sfdat->samptype){
-	case(PSF_SAMP_IEEE_FLOAT):		
-		if(do_reverse){				
+	case(PSF_SAMP_IEEE_FLOAT):
+		if(do_reverse){
 			for(i=0; i < nFrames; i++){
 				for(j=0;j < chans; j++) {
 					fsamp = (float) *pbuf++;
@@ -1799,10 +1799,10 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}							
-			}			
+				}
+			}
 		}
-		else {			
+		else {
 			for(i=0; i < nFrames; i++, pbuf += chans){
 				for(j=0;j < chans; j++) {
 					fsamp = (float) pbuf[j];
@@ -1818,14 +1818,14 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 					if(sfdat->pPeaks && (sfdat->pPeaks[j].val < absfsamp)){
 						sfdat->pPeaks[j].pos = sfdat->nFrames + i;
 						sfdat->pPeaks[j].val = absfsamp;
-					}					
-				}								
-			}			
+					}
+				}
+			}
 		}
 		break;
 	case(PSF_SAMP_16):
 		/* TODO: optimise all this with func pointers etc */
-		if(do_reverse){	
+		if(do_reverse){
 			short ssamp;
 			for(i=0; i < nFrames; i++){
 				for(j=0;j < chans; j++) {
@@ -1847,13 +1847,13 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}	
+				}
 			}
 		}
 		else {
 			short ssamp;
 			for(i=0; i < nFrames; i++, buf += chans){
-				for(j=0;j < chans; j++) {					 
+				for(j=0;j < chans; j++) {
 					fsamp = (float) buf[j];
 					/* clip now! we may have a flag to rescale first...one day */
 					fsamp = min(fsamp,1.0f);
@@ -1867,17 +1867,17 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 						ssamp = (short) psf_round(fsamp * 32766.0 + 2.0 * trirand());
 					else
 						ssamp = (short) psf_round(fsamp * MAX_16BIT);
-					
+
 					if(wavDoWrite(sfdat,(char *) &ssamp,sizeof(short))){
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}			
-			}			
+				}
+			}
 		}
 		break;
-	case(PSF_SAMP_24):			 
-		if(do_reverse){				
+	case(PSF_SAMP_24):
+		if(do_reverse){
 			for(i=0; i < nFrames; i++){
 				for(j=0;j < chans; j++) {
 					fsamp =(float)  *buf++;
@@ -1889,7 +1889,7 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 						sfdat->pPeaks[j].pos = sfdat->nFrames + i;
 						sfdat->pPeaks[j].val = absfsamp;
 					}
-					lsamp = psf_round(fsamp * MAX_32BIT);					
+					lsamp = psf_round(fsamp * MAX_32BIT);
 					lsamp = REVDWBYTES(lsamp);
                     if(do_shift){
 						if(sfdat->is_little_endian)
@@ -1901,12 +1901,12 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}			
+				}
 			}
 		}
-		else {			
+		else {
 			for(i=0; i < nFrames; i++, buf += chans){
-				for(j=0;j < chans; j++) {					 
+				for(j=0;j < chans; j++) {
 					fsamp = (float)  buf[j];
 					/* clip now! we may have a flag to rescale first...one day */
 					fsamp = min(fsamp,1.0f);
@@ -1927,12 +1927,12 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}				
-			}			
+				}
+			}
 		}
 		break;
 	case(PSF_SAMP_32):
-		if(do_reverse){				
+		if(do_reverse){
 			for(i=0; i < nFrames; i++){
 				for(j=0;j < chans; j++) {
 					fsamp = (float) *buf++;
@@ -1944,18 +1944,18 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 						sfdat->pPeaks[j].pos = sfdat->nFrames + i;
 						sfdat->pPeaks[j].val = absfsamp;
 					}
-					lsamp = psf_round(fsamp * MAX_32BIT);					
+					lsamp = psf_round(fsamp * MAX_32BIT);
 					lsamp = REVDWBYTES(lsamp);
 					if( wavDoWrite(sfdat,(char *) &lsamp,sizeof(int))){
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}		
+				}
 			}
 		}
-		else {			
+		else {
 			for(i=0; i < nFrames; i++, buf += chans){
-				for(j=0;j < chans; j++) {					 
+				for(j=0;j < chans; j++) {
 					fsamp = (float) buf[j];
 					/* clip now! we may have a flag to rescale first...one day */
 					fsamp = min(fsamp,1.0f);
@@ -1966,18 +1966,18 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 						sfdat->pPeaks[j].val = absfsamp;
 					}
 					lsamp = psf_round(fsamp * MAX_32BIT);
-					
+
 					if(wavDoWrite(sfdat,(char *) &lsamp,sizeof(int))){
 						DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 						return PSF_E_CANT_WRITE;
 					}
-				}			
-			}			
+				}
+			}
 		}
 		break;
 	default:
 		DBGFPRINTF((stderr, "wavOpenWrite: unsupported sample format\n"));
-		return PSF_E_UNSUPPORTED;		
+		return PSF_E_UNSUPPORTED;
 
 	}
 	POS64(sfdat->lastwritepos) += nFrames;
@@ -1985,8 +1985,8 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 	sfdat->curframepos =  (DWORD) POS64(sfdat->lastwritepos);
 	sfdat->nFrames = max(sfdat->nFrames, ((DWORD) POS64(sfdat->lastwritepos)));
 /*	fflush(sfdat->file);*/	/* ? need this if reading/seeking as well as  write, etc */
-	return nFrames; 
-		
+	return nFrames;
+
 }
 
 
@@ -1994,17 +1994,17 @@ int psf_sndWriteDoubleFrames(int sfd, const double *buf, DWORD nFrames)
 
 int psf_sndWriteShortFrames(int sfd, const short *buf, DWORD nFrames)
 {
-	int chans;	 
+	int chans;
 	DWORD i;
 	int j;
 	PSFFILE *sfdat;
-	
+
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
-	
-#ifdef _DEBUG		
+
+#ifdef _DEBUG
 	assert(sfdat->file);
 	assert(sfdat->filename);
 #endif
@@ -2016,20 +2016,20 @@ int psf_sndWriteShortFrames(int sfd, const short *buf, DWORD nFrames)
 	if(sfdat->isRead)
 		return PSF_E_FILE_READONLY;
 	chans = sfdat->fmt.Format.nChannels;
-		
+
 	/* well, it can't be ~less~ efficient than converting twice! */
-	if(!sfdat->is_little_endian){	
+	if(!sfdat->is_little_endian){
 		short ssamp;
 		double fval;
 		for(i=0; i < nFrames; i++){
 			for(j=0;j < chans; j++) {
 				ssamp = *buf++;
-				fval = ((double) ssamp / MAX_16BIT);		
+				fval = ((double) ssamp / MAX_16BIT);
 				if(sfdat->pPeaks && (sfdat->pPeaks[j].val < (float)(fabs(fval)))){
 					sfdat->pPeaks[j].pos = sfdat->nFrames + i;
 					sfdat->pPeaks[j].val = (float)fval;
 				}
-								
+
 				ssamp = (short) REVWBYTES(ssamp);
 				if(wavDoWrite(sfdat,(char *) &ssamp,sizeof(short))){
 					DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
@@ -2044,20 +2044,20 @@ int psf_sndWriteShortFrames(int sfd, const short *buf, DWORD nFrames)
 		for(i=0; i < nFrames; i++){
 			for(j=0;j < chans; j++) {
 				ssamp = *buf++;
-				fval = ((double) ssamp / MAX_16BIT);		
+				fval = ((double) ssamp / MAX_16BIT);
 				if(sfdat->pPeaks && (sfdat->pPeaks[j].val < (float)(fabs(fval)))){
 					sfdat->pPeaks[j].pos = sfdat->nFrames + i;
 					sfdat->pPeaks[j].val = (float)fval;
 				}
-				
+
 				if(wavDoWrite(sfdat,(char *) &ssamp,sizeof(short))){
 					DBGFPRINTF((stderr, "wavOpenWrite: write error\n"));
 					return PSF_E_CANT_WRITE;
 				}
 			}
-		}			
+		}
 	}
-	POS64(sfdat->lastwritepos) += nFrames;						
+	POS64(sfdat->lastwritepos) += nFrames;
 	sfdat->nFrames = max(sfdat->nFrames, ((DWORD) POS64(sfdat->lastwritepos)));
 	fflush(sfdat->file);
 	return nFrames;
@@ -2109,24 +2109,24 @@ static int wavReadHeader(PSFFILE *sfdat)
 			if(fgetpos(sfdat->file,&bytepos))
 			    return PSF_E_CANT_SEEK;
 			sfdat->fmtoffset = bytepos;
-			if(wavDoRead(sfdat,(char *)&(sfdat->fmt.Format),sizeof(WAVEFORMAT))){				
+			if(wavDoRead(sfdat,(char *)&(sfdat->fmt.Format),sizeof(WAVEFORMAT))){
 				return PSF_E_CANT_READ;
 			}
-			if(!sfdat->is_little_endian)		
-				fmtSwapBytes(sfdat);	
+			if(!sfdat->is_little_endian)
+				fmtSwapBytes(sfdat);
 			/* calling function decides if format is supported*/
 			if(size > sizeof(WAVEFORMAT)) {
 				if(wavDoRead(sfdat,(char*)&cbSize,sizeof(WORD)))
 					return PSF_E_CANT_READ;
-				if(!sfdat->is_little_endian)		
+				if(!sfdat->is_little_endian)
 					cbSize = (WORD) REVWBYTES(cbSize);
 				if(cbSize != (WORD)0) {
 					if(sfdat->fmt.Format.wFormatTag	== WAVE_FORMAT_EXTENSIBLE){
 						if(cbSize != 22)
 							return PSF_E_BAD_FORMAT;
-						sfdat->riff_format = PSF_WAVE_EX;						
+						sfdat->riff_format = PSF_WAVE_EX;
 					}
-				}				
+				}
 				else {
                     int fmtsize = 18;
 					/* cbSize = 0: has to be 18-byte WAVEFORMATEX */
@@ -2143,23 +2143,23 @@ static int wavReadHeader(PSFFILE *sfdat)
                         fmtsize++;
                         /* TODO: send irate message to user about illformed files*/
                     }
-				}				
+				}
 				sfdat->fmt.Format.cbSize = cbSize;
 				/* fill in as if basic Format; may change later from WAVE-EX */
 				sfdat->fmt.Samples.wValidBitsPerSample = sfdat->fmt.Format.wBitsPerSample;
-				sfdat->fmt.dwChannelMask = 0;			
+				sfdat->fmt.dwChannelMask = 0;
 				/* get rest of WAVE-EX, if we have it */
 				if(sfdat->fmt.Format.wFormatTag	== WAVE_FORMAT_EXTENSIBLE){
 					WORD validbits;
 					DWORD chmask;
 					if(wavDoRead(sfdat,(char *) &validbits,sizeof(WORD)))
 						return PSF_E_CANT_READ;
-					if(!sfdat->is_little_endian)		
+					if(!sfdat->is_little_endian)
 						sfdat->fmt.Samples.wValidBitsPerSample = (WORD) REVWBYTES(validbits);
 					if(wavDoRead(sfdat,(char *) &chmask,sizeof(DWORD)))
 						return PSF_E_CANT_READ;
                     sfdat->fmt.dwChannelMask = chmask;
-					if(!sfdat->is_little_endian)		
+					if(!sfdat->is_little_endian)
 						sfdat->fmt.dwChannelMask = REVDWBYTES(chmask);
                     /* TODO: recognize more speaker layouts! */
                     sfdat->chformat = get_speakerlayout(sfdat->fmt.dwChannelMask,sfdat->fmt.Format.nChannels);
@@ -2168,21 +2168,21 @@ static int wavReadHeader(PSFFILE *sfdat)
 					if(!sfdat->is_little_endian){
 						sfdat->fmt.SubFormat.Data1 = REVDWBYTES(sfdat->fmt.SubFormat.Data1);
 						sfdat->fmt.SubFormat.Data2 = (WORD) REVWBYTES(sfdat->fmt.SubFormat.Data2);
-						sfdat->fmt.SubFormat.Data3 = (WORD) REVWBYTES(sfdat->fmt.SubFormat.Data3);	
+						sfdat->fmt.SubFormat.Data3 = (WORD) REVWBYTES(sfdat->fmt.SubFormat.Data3);
 					}
 					/* if we get a good GUID, this sets up sfdat with samplesize info */
-					if(check_guid(sfdat))											
+					if(check_guid(sfdat))
 						return PSF_E_UNSUPPORTED;
 				}
-			}			
+			}
 			break;
-		case(TAG('P','E','A','K')):	
-            /* I SHOULD  report an error if this is after data chunk; 
+		case(TAG('P','E','A','K')):
+            /* I SHOULD  report an error if this is after data chunk;
                but I suppose innocent users (e.g. of Cubase ) will grumble... */
             if(wavDoRead(sfdat,(char  *) &version,sizeof(DWORD)))
 				return PSF_E_CANT_READ;
-            if(!sfdat->is_little_endian)				
-				version = REVDWBYTES(version);		            
+            if(!sfdat->is_little_endian)
+				version = REVDWBYTES(version);
             if(version != 1) {
                 DBGFPRINTF((stderr, "Unexpected version level for PEAK chunk!\n"));
 					return PSF_E_UNSUPPORTED;
@@ -2194,7 +2194,7 @@ static int wavReadHeader(PSFFILE *sfdat)
 			if(fgetpos(sfdat->file,&bytepos))
 			    return PSF_E_CANT_SEEK;
 			sfdat->peakoffset = bytepos;
-            if(wavDoRead(sfdat,(char *) &peaktime,sizeof(DWORD))){				
+            if(wavDoRead(sfdat,(char *) &peaktime,sizeof(DWORD))){
 			    DBGFPRINTF((stderr,"Error reading PEAK time\n"));
                 return PSF_E_CANT_READ;
             }
@@ -2212,11 +2212,11 @@ static int wavReadHeader(PSFFILE *sfdat)
             }
 			if(!sfdat->is_little_endian){
                 DWORD *pBlock;
-				int i;			
+				int i;
 				pBlock = (DWORD *) (sfdat->pPeaks);
 				for(i=0;i < sfdat->fmt.Format.nChannels * 2; i++)
 					pBlock[i] = REVDWBYTES(pBlock[i]);
-			}            
+			}
 			break;
 		case(TAG('d','a','t','a')):
 			if(fgetpos(sfdat->file,&bytepos))
@@ -2224,7 +2224,7 @@ static int wavReadHeader(PSFFILE *sfdat)
 			sfdat->dataoffset = bytepos;
 			if(POS64(sfdat->fmtoffset)==0)
 				return PSF_E_BAD_FORMAT;
-			sfdat->nFrames = size / sfdat->fmt.Format.nBlockAlign;			
+			sfdat->nFrames = size / sfdat->fmt.Format.nBlockAlign;
 			/* get rescale factor if available */
 			/* NB in correct format, val is always >= 0.0 */
 			if(sfdat->pPeaks && POS64(sfdat->peakoffset) != 0){
@@ -2242,7 +2242,7 @@ static int wavReadHeader(PSFFILE *sfdat)
 				if(sfdat->fmt.Format.wBitsPerSample != 32) {
 					/*return PSF_E_BAD_FORMAT;*/
 					if(sfdat->fmt.Format.wBitsPerSample == sizeof(double))
-						return PSF_E_UNSUPPORTED;			
+						return PSF_E_UNSUPPORTED;
 					else
 					    return PSF_E_BAD_FORMAT;
 				}
@@ -2269,13 +2269,13 @@ static int wavReadHeader(PSFFILE *sfdat)
 					break;
 				default:
 					sfdat->samptype = PSF_SAMP_UNKNOWN;
-					break;					
-				}				
+					break;
+				}
 				if(sfdat->samptype == PSF_SAMP_UNKNOWN)
 					return PSF_E_UNSUPPORTED;
 				sfdat->lastop  = PSF_OP_READ;
 				return PSF_E_NOERROR;
-			}					
+			}
 			default:
 			/* unknown chunk - skip */
 			if(fseek(sfdat->file,size,SEEK_CUR))
@@ -2288,7 +2288,7 @@ static int wavReadHeader(PSFFILE *sfdat)
 static int aiffReadHeader(PSFFILE *sfdat)
 {
 	DWORD tag,version,peaktime,remain,offset,blocksize;
-	int have_comm =0,have_ssnd =0;	
+	int have_comm =0,have_ssnd =0;
 	DWORD dwData,size;
 	unsigned char ieee[10];
 	WORD wData;
@@ -2301,14 +2301,14 @@ static int aiffReadHeader(PSFFILE *sfdat)
 		|| wavDoRead(sfdat,(char *) &remain,sizeof(DWORD)))
 		return PSF_E_CANT_READ;
 	if(sfdat->is_little_endian) {
-		remain = REVDWBYTES(remain);	
+		remain = REVDWBYTES(remain);
 		tag = REVDWBYTES(tag);
 	}
 	if(tag != TAG('F','O','R','M')){
 		DBGFPRINTF((stderr, "file is not AIFF: no PSF chunk\n"));
 		return PSF_E_BADARG;
 	}
-		
+
 	if(wavDoRead(sfdat,(char *)&tag,sizeof(DWORD)))
 		return PSF_E_CANT_READ;
 	if(sfdat->is_little_endian)
@@ -2325,14 +2325,14 @@ static int aiffReadHeader(PSFFILE *sfdat)
 		|| wavDoRead(sfdat,(char *) &size,sizeof(DWORD)))
 			return PSF_E_CANT_READ;
 		if(sfdat->is_little_endian) {
-			size = REVDWBYTES(size);	
+			size = REVDWBYTES(size);
 			tag = REVDWBYTES(tag);
 		}
 		remain -=(int)( 2 * sizeof(DWORD));
 		switch(tag){
 		case(TAG('C','O','M','M')):
 			if(size != 18){
-				DBGFPRINTF((stderr,"AIFF file has bad size for COMM chunk\n")); 
+				DBGFPRINTF((stderr,"AIFF file has bad size for COMM chunk\n"));
 			    return PSF_E_BAD_FORMAT;
 			}
 			if(fgetpos(sfdat->file,&bytepos))
@@ -2362,7 +2362,7 @@ static int aiffReadHeader(PSFFILE *sfdat)
 			case(32):
 				sfdat->fmt.Format.nBlockAlign = sizeof(int);
 				sfdat->samptype = PSF_SAMP_32;
-				break;			
+				break;
 			case(24):
 				sfdat->fmt.Format.nBlockAlign = 3;
 				sfdat->samptype = PSF_SAMP_24;
@@ -2392,7 +2392,7 @@ static int aiffReadHeader(PSFFILE *sfdat)
                 DBGFPRINTF((stderr,"Error reading PEAK version\n"));
                 return PSF_E_CANT_READ;
             }
-            if(sfdat->is_little_endian)				
+            if(sfdat->is_little_endian)
 				version  = REVDWBYTES(version);
             if(version != 1){
 				DBGFPRINTF((stderr, "AIFF file has unexpected version level for PEAK chunk!\n"));
@@ -2405,16 +2405,16 @@ static int aiffReadHeader(PSFFILE *sfdat)
                 DBGFPRINTF((stderr,"Error reading PEAK time\n"));
 				return PSF_E_CANT_READ;
             }
-			if(sfdat->is_little_endian)								
-				peaktime = REVDWBYTES(peaktime);						
-			sfdat->peaktime = (time_t) peaktime;			
+			if(sfdat->is_little_endian)
+				peaktime = REVDWBYTES(peaktime);
+			sfdat->peaktime = (time_t) peaktime;
 			sfdat->pPeaks = (PSF_CHPEAK *)malloc(sizeof(PSF_CHPEAK) * sfdat->fmt.Format.nChannels);
             if(sfdat->pPeaks==NULL){
 			    DBGFPRINTF((stderr, "wavOpenWrite: no memory for peak data\n"));
                 return PSF_E_NOMEM;
             }
             if(wavDoRead(sfdat,(char *)(sfdat->pPeaks),sizeof(PSF_CHPEAK) * sfdat->fmt.Format.nChannels)){
-                DBGFPRINTF((stderr,"Error reading PEAK peak data\n"));   
+                DBGFPRINTF((stderr,"Error reading PEAK peak data\n"));
 				return PSF_E_CANT_READ;
              }
 			if(sfdat->is_little_endian){
@@ -2422,15 +2422,15 @@ static int aiffReadHeader(PSFFILE *sfdat)
 				int i;
 				pBlock = (DWORD *) (sfdat->pPeaks);
 				for(i=0;i < sfdat->fmt.Format.nChannels * 2; i++)
-					pBlock[i] = REVDWBYTES(pBlock[i]); 
-			}			
+					pBlock[i] = REVDWBYTES(pBlock[i]);
+			}
 			remain -= size;
 			break;
 		case(TAG('S','S','N','D')):
 			if(wavDoRead(sfdat,(char *)&offset,sizeof(DWORD))
 					|| wavDoRead(sfdat,(char *) &blocksize,sizeof(DWORD)))
 			return PSF_E_CANT_READ;
-			if(sfdat->is_little_endian){				
+			if(sfdat->is_little_endian){
 				offset  = REVDWBYTES(offset);
 				blocksize = REVDWBYTES(blocksize);
 			}
@@ -2442,7 +2442,7 @@ static int aiffReadHeader(PSFFILE *sfdat)
 			/* NB for seek: we used up 8 bytes with offset and blocksize */
 			/* if we already have COMM, we could finish here! */
 			if(fseek(sfdat->file,((size - 2* sizeof(DWORD))+1)&~1,SEEK_CUR))
-				return PSF_E_CANT_SEEK;				
+				return PSF_E_CANT_SEEK;
 			have_ssnd = 1;
 			remain -= (size+1)&~1;
 			break;
@@ -2464,8 +2464,8 @@ static int aiffReadHeader(PSFFILE *sfdat)
 	}
 	/* we have seeked to EOF, so rewind to start of data */
 	if(fsetpos(sfdat->file,&sfdat->dataoffset))
-		return PSF_E_CANT_SEEK;			
-	sfdat->curframepos = 0;	
+		return PSF_E_CANT_SEEK;
+	sfdat->curframepos = 0;
 	sfdat->riff_format = PSF_AIFF;
 	/* get rescale factor if available */
 	/* NB in correct format, val is always >= 0.0 */
@@ -2484,7 +2484,7 @@ static int aiffReadHeader(PSFFILE *sfdat)
 static int aifcReadHeader(PSFFILE *sfdat)
 {
 	DWORD tag,version,peaktime,remain,offset,blocksize;
-	int have_comm =0,have_ssnd =0,have_fver = 0;	
+	int have_comm =0,have_ssnd =0,have_fver = 0;
 	DWORD dwData,size,aifcver,ID_compression;
 	unsigned char ieee[10];
 	WORD wData;
@@ -2497,14 +2497,14 @@ static int aifcReadHeader(PSFFILE *sfdat)
 		|| wavDoRead(sfdat,(char *) &remain,sizeof(DWORD)))
 		return PSF_E_CANT_READ;
 	if(sfdat->is_little_endian) {
-		remain = REVDWBYTES(remain);	
+		remain = REVDWBYTES(remain);
 		tag = REVDWBYTES(tag);
 	}
 	if(tag != TAG('F','O','R','M')){
 		DBGFPRINTF((stderr, "file is not AIFC: no FORM chunk\n"));
 		return PSF_E_BADARG;
 	}
-	
+
 	if(wavDoRead(sfdat,(char *)&tag,sizeof(DWORD)))
 		return PSF_E_CANT_READ;
 	if(sfdat->is_little_endian)
@@ -2521,7 +2521,7 @@ static int aifcReadHeader(PSFFILE *sfdat)
 		|| wavDoRead(sfdat,(char *) &size,sizeof(DWORD)))
 			return PSF_E_CANT_READ;
 		if(sfdat->is_little_endian) {
-			size = REVDWBYTES(size);	
+			size = REVDWBYTES(size);
 			tag = REVDWBYTES(tag);
 		}
 		remain -= 2 * sizeof(DWORD);
@@ -2533,7 +2533,7 @@ static int aifcReadHeader(PSFFILE *sfdat)
 			}
 			if(wavDoRead(sfdat,(char *) &aifcver,sizeof(DWORD)))
 				return PSF_E_CANT_READ;
-			if(sfdat->is_little_endian) 
+			if(sfdat->is_little_endian)
 				aifcver = REVDWBYTES(aifcver);
 			remain-= sizeof(DWORD);
 			if(aifcver != AIFC_VERSION_1)
@@ -2571,7 +2571,7 @@ static int aifcReadHeader(PSFFILE *sfdat)
 			case(32):
 				sfdat->fmt.Format.nBlockAlign = sizeof(DWORD);
 				sfdat->samptype = PSF_SAMP_32;
-				break;			
+				break;
 			case(24):
 				sfdat->fmt.Format.nBlockAlign = 3;
 				sfdat->samptype = PSF_SAMP_24;
@@ -2579,35 +2579,35 @@ static int aifcReadHeader(PSFFILE *sfdat)
 			case(16):
 				sfdat->fmt.Format.nBlockAlign = sizeof(short);
 				sfdat->samptype = PSF_SAMP_16;
-				break;			
+				break;
 			default:
 				DBGFPRINTF((stderr, "unsupported sample format for AIFC file\n"));
 				return PSF_E_UNSUPPORTED;
 			}
 			sfdat->fmt.Format.nBlockAlign = (WORD) (sfdat->fmt.Format.nBlockAlign * sfdat->fmt.Format.nChannels);
 			if(wavDoRead(sfdat,(char *)&ID_compression,sizeof(DWORD))){
-				return PSF_E_CANT_READ;	
+				return PSF_E_CANT_READ;
 			}
 			if(sfdat->is_little_endian)
 				ID_compression = REVDWBYTES(ID_compression);
-            /* TODO: recognize any more pcm quasi-compression formats? */    
+            /* TODO: recognize any more pcm quasi-compression formats? */
 			if(!(    (ID_compression == TAG('N','O','N','E'))
-				  || (ID_compression == TAG('F','L','3','2'))	
+				  || (ID_compression == TAG('F','L','3','2'))
 				  || (ID_compression == TAG('f','l','3','2'))
-                  || (ID_compression == TAG('i','n','2','4')))	
+                  || (ID_compression == TAG('i','n','2','4')))
 						  ){
 				DBGFPRINTF((stderr, "AIFC file: unsupported compression format\n"));
 				return PSF_E_UNSUPPORTED;
 			}
 			/*set stype info */
-			if((ID_compression== TAG('F','L','3','2'))		  
+			if((ID_compression== TAG('F','L','3','2'))
 				|| ID_compression == TAG('f','l','3','2')){
-					if(sfdat->fmt.Format.wBitsPerSample != 32){						
+					if(sfdat->fmt.Format.wBitsPerSample != 32){
 						DBGFPRINTF((stderr, "AIFC file: samples not 32bit in floats file\n"));
 						return PSF_E_BAD_FORMAT;
 					}
 					else {
-						sfdat->fmt.Format.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;			
+						sfdat->fmt.Format.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
 						sfdat->samptype = PSF_SAMP_IEEE_FLOAT;
 					}
 			}
@@ -2628,8 +2628,8 @@ static int aifcReadHeader(PSFFILE *sfdat)
 			}
 			if(wavDoRead(sfdat,(char *)&version,sizeof(DWORD)))
 				return PSF_E_CANT_READ;
-            if(sfdat->is_little_endian)				
-				version  = REVDWBYTES(version);	
+            if(sfdat->is_little_endian)
+				version  = REVDWBYTES(version);
             if(version != 1) {
 				DBGFPRINTF((stderr, "Unexpected version level for PEAK chunk!\n"));
 				return PSF_E_UNSUPPORTED;
@@ -2641,9 +2641,9 @@ static int aifcReadHeader(PSFFILE *sfdat)
                 DBGFPRINTF((stderr,"Error reading PEAK time\n"));
 				return PSF_E_CANT_READ;
             }
-			if(sfdat->is_little_endian)							
-				peaktime = REVDWBYTES(peaktime);			
-			sfdat->peaktime = (time_t) peaktime;			
+			if(sfdat->is_little_endian)
+				peaktime = REVDWBYTES(peaktime);
+			sfdat->peaktime = (time_t) peaktime;
 			sfdat->pPeaks = (PSF_CHPEAK *)malloc(sizeof(PSF_CHPEAK) * sfdat->fmt.Format.nChannels);
             if(sfdat->pPeaks==NULL) {
                 DBGFPRINTF((stderr, "wavOpenWrite: no memory for peak data\n"));
@@ -2658,15 +2658,15 @@ static int aifcReadHeader(PSFFILE *sfdat)
 				int i;
 				pBlock = (DWORD *) (sfdat->pPeaks);
 				for(i=0;i < sfdat->fmt.Format.nChannels * 2; i++)
-					pBlock[i] = REVDWBYTES(pBlock[i]); 
-			}			
+					pBlock[i] = REVDWBYTES(pBlock[i]);
+			}
 			remain -= (size+1)&~1;
 			break;
 		case(TAG('S','S','N','D')):
 			if(wavDoRead(sfdat,(char *)&offset,sizeof(DWORD))
 					|| wavDoRead(sfdat,(char *) &blocksize,sizeof(DWORD)))
 			return PSF_E_CANT_READ;
-			if(sfdat->is_little_endian){				
+			if(sfdat->is_little_endian){
 				offset  = REVDWBYTES(offset);
 				blocksize = REVDWBYTES(blocksize);
 			}
@@ -2674,7 +2674,7 @@ static int aifcReadHeader(PSFFILE *sfdat)
 			    return PSF_E_CANT_SEEK;
 			sfdat->dataoffset = bytepos;
 			POS64(sfdat->dataoffset) += offset;
-			sfdat->nFrames = (size - 2* sizeof(DWORD))/ sfdat->fmt.Format.nBlockAlign;			
+			sfdat->nFrames = (size - 2* sizeof(DWORD))/ sfdat->fmt.Format.nBlockAlign;
 			if(fseek(sfdat->file,((size - 2* sizeof(DWORD))+1)&~1,SEEK_CUR))
 				return PSF_E_CANT_SEEK;
 			have_ssnd = 1;
@@ -2698,8 +2698,8 @@ static int aifcReadHeader(PSFFILE *sfdat)
 	}
 	/* we have seeked (ugh) to EOF, so rewind to start of data */
 	if(fsetpos(sfdat->file,&sfdat->dataoffset))
-		return PSF_E_CANT_SEEK;			
-	sfdat->curframepos = 0;	
+		return PSF_E_CANT_SEEK;
+	sfdat->curframepos = 0;
 	sfdat->riff_format = PSF_AIFC;
 	/* get rescale factor if available */
 	/* NB in correct format, val is always >= 0.0 */
@@ -2718,10 +2718,10 @@ static int aifcReadHeader(PSFFILE *sfdat)
 int psf_sndOpen(const char *path,PSF_PROPS *props, int rescale)
 {
 	int i,rc = 0;
-	PSFFILE *sfdat;	
+	PSFFILE *sfdat;
 	psf_format fmt;
 	char *fname = NULL;
-	
+
 	/* RWD interesting syntax issue: I need the curlies, or break doesn't work properly */
 	for(i=0;i < psf_maxfiles;i++) {
 		if(psf_files[i]==NULL)
@@ -2732,25 +2732,25 @@ int psf_sndOpen(const char *path,PSF_PROPS *props, int rescale)
 	}
 
 	sfdat = psf_newFile(NULL);
-	if(sfdat==NULL){		
+	if(sfdat==NULL){
 		return PSF_E_NOMEM;
-	}	
-	sfdat->rescale = rescale;	
+	}
+	sfdat->rescale = rescale;
 	sfdat->is_little_endian = byte_order();
 	fmt = psf_getFormatExt(path);
 	if(!(fmt==PSF_STDWAVE || fmt==PSF_WAVE_EX || fmt==PSF_AIFF || fmt==PSF_AIFC))
-		return PSF_E_BADARG;	
+		return PSF_E_BADARG;
 
 	if((sfdat->file = fopen(path,"rb"))  == NULL) {
 		DBGFPRINTF((stderr, "psf_sndOpen: cannot open '%s'\n", path));
         return PSF_E_CANT_OPEN;
 	}
 	sfdat->filename = (char *) malloc(strlen(path)+1);
-	if(sfdat->filename==NULL) {		
+	if(sfdat->filename==NULL) {
 		return PSF_E_NOMEM;
 	}
     strcpy(sfdat->filename, path);
-    sfdat->isRead =  1;	
+    sfdat->isRead =  1;
 	sfdat->nFrames = 0;
 	/* no need to calc header sizes */
 	switch(fmt){
@@ -2777,10 +2777,10 @@ int psf_sndOpen(const char *path,PSF_PROPS *props, int rescale)
 	/* fill props info*/
 	props->srate	= sfdat->fmt.Format.nSamplesPerSec;
 	props->chans	= sfdat->fmt.Format.nChannels;
-	props->samptype = sfdat->samptype;	
+	props->samptype = sfdat->samptype;
 	props->chformat = sfdat->chformat;
 	props->format      =  fmt;
-	if(fmt==PSF_STDWAVE && (sfdat->riff_format == PSF_WAVE_EX))	 
+	if(fmt==PSF_STDWAVE && (sfdat->riff_format == PSF_WAVE_EX))
 		props->format = PSF_WAVE_EX;
 
 	psf_files[i] = sfdat;
@@ -2815,14 +2815,14 @@ int psf_sndReadFloatFrames(int sfd, float *buf, DWORD nFrames)
 	assert(sfdat->file);
 	assert(sfdat->filename);
 	/* must check our calcs! */
-	assert(sfdat->curframepos <= sfdat->nFrames);	 
+	assert(sfdat->curframepos <= sfdat->nFrames);
 #endif
 	/* how much do we have left? return immediately if none! */
 	chans = sfdat->fmt.Format.nChannels;
-	framesread = min(sfdat->nFrames - sfdat->curframepos,nFrames);	
+	framesread = min(sfdat->nFrames - sfdat->curframepos,nFrames);
 	if(framesread==0)
 		return (long) framesread;
-	
+
 	blocksize =  framesread * chans;
 	switch(sfdat->riff_format){
 	case(PSF_STDWAVE):
@@ -2842,7 +2842,7 @@ int psf_sndReadFloatFrames(int sfd, float *buf, DWORD nFrames)
 		fflush(sfdat->file);
 	switch(sfdat->samptype){
 	case(PSF_SAMP_IEEE_FLOAT):
-		
+
 		if(do_reverse){
 			for(i=0;i < blocksize;i ++){
 				if(wavDoRead(sfdat,(char *)&lsamp,sizeof(int)))
@@ -2852,7 +2852,7 @@ int psf_sndReadFloatFrames(int sfd, float *buf, DWORD nFrames)
 				if(sfdat->rescale)
 					fsamp *= sfdat->rescale_fac;
 				*pbuf++ = fsamp;
-			}			
+			}
 		}
 		else{
 			if(wavDoRead(sfdat,(char *) buf,blocksize * sizeof(float)))
@@ -2877,7 +2877,7 @@ int psf_sndReadFloatFrames(int sfd, float *buf, DWORD nFrames)
 		else{
 			for(i = 0; i < blocksize; i++){
 				if(wavDoRead(sfdat,(char *)&ssamp,sizeof(short)))
-					return PSF_E_CANT_READ;				
+					return PSF_E_CANT_READ;
 				fsamp = (float)((double) ssamp / MAX_16BIT);
 				*pbuf++ = fsamp;
 			}
@@ -2891,7 +2891,7 @@ int psf_sndReadFloatFrames(int sfd, float *buf, DWORD nFrames)
 					   sfdat->riff_format,do_shift,sfdat->is_little_endian);
 				debug = 0;
 			}
-#endif            
+#endif
 			for(i=0;i < blocksize;i++){
                 temp = 0;
 				if(wavDoRead(sfdat,(char *)&temp,3))
@@ -2920,7 +2920,7 @@ int psf_sndReadFloatFrames(int sfd, float *buf, DWORD nFrames)
 			for(i=0;i < blocksize;i++){
 				if(wavDoRead(sfdat,(char *)&lsamp,sizeof(int)))
 					return PSF_E_CANT_READ;
-				lsamp = REVDWBYTES(lsamp);				
+				lsamp = REVDWBYTES(lsamp);
 				fsamp = (float)((double)(lsamp) / MAX_32BIT);
 				*pbuf++ = fsamp;
 			}
@@ -2929,7 +2929,7 @@ int psf_sndReadFloatFrames(int sfd, float *buf, DWORD nFrames)
 			for(i=0;i < blocksize;i++){
 				lsamp = 0L;
 				if(wavDoRead(sfdat,(char *)&lsamp,sizeof(int)))
-					return PSF_E_CANT_READ;				
+					return PSF_E_CANT_READ;
 				fsamp = (float)((double)(lsamp) / MAX_32BIT);
 				*pbuf++ = fsamp;
 			}
@@ -2938,7 +2938,7 @@ int psf_sndReadFloatFrames(int sfd, float *buf, DWORD nFrames)
 	default:
 		DBGFPRINTF((stderr, "psf_sndOpen: unsupported sample format\n"));
 		return PSF_E_UNSUPPORTED;
-	}	
+	}
 	sfdat->curframepos += framesread;
 
 	return framesread;
@@ -2970,14 +2970,14 @@ int psf_sndReadDoubleFrames(int sfd, double *buf, DWORD nFrames)
 	assert(sfdat->file);
 	assert(sfdat->filename);
 	/* must check our calcs! */
-	assert(sfdat->curframepos <= sfdat->nFrames);	 
+	assert(sfdat->curframepos <= sfdat->nFrames);
 #endif
 	/* how much do we have left? return immediately if none! */
 	chans = sfdat->fmt.Format.nChannels;
-	framesread = min(sfdat->nFrames - sfdat->curframepos,nFrames);	
+	framesread = min(sfdat->nFrames - sfdat->curframepos,nFrames);
 	if(framesread==0)
 		return (long) framesread;
-	
+
 	blocksize =  framesread * chans;
 	switch(sfdat->riff_format){
 	case(PSF_STDWAVE):
@@ -2997,7 +2997,7 @@ int psf_sndReadDoubleFrames(int sfd, double *buf, DWORD nFrames)
 		fflush(sfdat->file);
 	switch(sfdat->samptype){
 	case(PSF_SAMP_IEEE_FLOAT):
-		
+
 		if(do_reverse){
 		    for(i=0;i < blocksize;i ++){
 			if(wavDoRead(sfdat,(char *)&lsamp,sizeof(int)))
@@ -3007,14 +3007,14 @@ int psf_sndReadDoubleFrames(int sfd, double *buf, DWORD nFrames)
 			if(sfdat->rescale)
 			    fsamp *= sfdat->rescale_fac;
 			*pbuf++ = (double) fsamp;
-		    }			
+		    }
 		}
 		else{
-                    for(i=0;i < blocksize;i++){	
+                    for(i=0;i < blocksize;i++){
                         if(wavDoRead(sfdat,(char *) &fsamp, sizeof(float)))
 				return PSF_E_CANT_READ;
 		        *pbuf++ = (double) fsamp;
-		    }					  
+		    }
 		    if(sfdat->rescale){
 			pbuf = buf;
 			for(i=0;i < blocksize; i++)
@@ -3035,7 +3035,7 @@ int psf_sndReadDoubleFrames(int sfd, double *buf, DWORD nFrames)
 		else{
 			for(i = 0; i < blocksize; i++){
 				if(wavDoRead(sfdat,(char *)&ssamp,sizeof(short)))
-					return PSF_E_CANT_READ;				
+					return PSF_E_CANT_READ;
 				fsamp = (float)((double) ssamp / MAX_16BIT);
 				*pbuf++ = (double) fsamp;
 			}
@@ -3070,7 +3070,7 @@ int psf_sndReadDoubleFrames(int sfd, double *buf, DWORD nFrames)
 			for(i=0;i < blocksize;i++){
 				if(wavDoRead(sfdat,(char *)&lsamp,sizeof(int)))
 					return PSF_E_CANT_READ;
-				lsamp = REVDWBYTES(lsamp);				
+				lsamp = REVDWBYTES(lsamp);
 				fsamp = (float)((double)(lsamp) / MAX_32BIT);
 				*pbuf++ = (double) fsamp;
 			}
@@ -3079,7 +3079,7 @@ int psf_sndReadDoubleFrames(int sfd, double *buf, DWORD nFrames)
 			for(i=0;i < blocksize;i++){
 				lsamp = 0L;
 				if(wavDoRead(sfdat,(char *)&lsamp,sizeof(int)))
-					return PSF_E_CANT_READ;				
+					return PSF_E_CANT_READ;
 				fsamp = (float)((double)(lsamp) / MAX_32BIT);
 				*pbuf++ = (double) fsamp;
 			}
@@ -3088,7 +3088,7 @@ int psf_sndReadDoubleFrames(int sfd, double *buf, DWORD nFrames)
 	default:
 		DBGFPRINTF((stderr, "psf_sndOpen: unsupported sample format\n"));
 		return PSF_E_UNSUPPORTED;
-	}	
+	}
 	sfdat->curframepos += framesread;
 
 	return framesread;
@@ -3131,11 +3131,11 @@ int psf_sndSize(int sfd)
 #endif
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
 	if(sfdat==NULL)
 		return PSF_E_BADARG;
-#ifdef _DEBUG		
+#ifdef _DEBUG
 	assert(sfdat->file);
 	assert(sfdat->filename);
     /* seems as good a place as any to verify chuncksize integrity of this file...*/
@@ -3146,9 +3146,9 @@ int psf_sndSize(int sfd)
     /* this will reveal if any other chunks etc after (ugh) data chunk */
 	framesize = (DWORD)((POS64(size) - (MYLONG)(sfdat->dataoffset)) / sfdat->fmt.Format.nBlockAlign);
 	assert(framesize >= (DWORD) sfdat->nFrames);
-	
+
 #endif
-	
+
 	return sfdat->nFrames;
 }
 
@@ -3158,18 +3158,18 @@ int psf_sndTell(int sfd)
 {
 	fpos_t pos;
 	PSFFILE *sfdat;
-	
+
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
 	if(sfdat==NULL)
 		return PSF_E_BADARG;
-#ifdef _DEBUG		
+#ifdef _DEBUG
 	assert(sfdat->file);
 	assert(sfdat->filename);
 #endif
-	
+
 	if(fgetpos(sfdat->file,&pos))
 	    return PSF_E_CANT_SEEK;
 	POS64(pos) -= POS64(sfdat->dataoffset);
@@ -3181,7 +3181,7 @@ int psf_sndTell(int sfd)
 		/* RWD this will be out (but == curframepos) if lastop was a read . so maybe say >=, or test for lastop ? */
 		assert(pos == sfdat->lastwritepos);
 #endif
-	return (int) POS64(pos);			 
+	return (int) POS64(pos);
 }
 
 
@@ -3190,15 +3190,15 @@ int psf_sndSeek(int sfd,int offset, int mode)
 	long byteoffset;    /* can be negative - limited to 2GB moves*/
     fpos_t data_end,pos_target,cur_pos;
 	PSFFILE *sfdat;
-	
+
 
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
 	if(sfdat==NULL)
 		return PSF_E_BADARG;
-#ifdef _DEBUG		
+#ifdef _DEBUG
 	assert(sfdat->file);
 	assert(sfdat->filename);
 #endif
@@ -3210,12 +3210,12 @@ int psf_sndSeek(int sfd,int offset, int mode)
 	byteoffset =  offset *  sfdat->fmt.Format.nBlockAlign;
     POS64(data_end) = POS64(sfdat->dataoffset) + (sfdat->nFrames * sfdat->fmt.Format.nBlockAlign);
 	switch(mode){
-	case PSF_SEEK_SET:  
+	case PSF_SEEK_SET:
 	    POS64(pos_target) =  POS64(sfdat->dataoffset) + byteoffset;
 	    if(fsetpos(sfdat->file,&pos_target))
 		    return PSF_E_CANT_SEEK;
 	    break;
-	case PSF_SEEK_END:	    
+	case PSF_SEEK_END:
         /* NB can't just seek to end of file as there may be junk after data chunk! */
         POS64(pos_target) = POS64(data_end) + byteoffset;
 	    if(fsetpos(sfdat->file,&pos_target))
@@ -3276,22 +3276,22 @@ int psf_sndReadPeaks(int sfd,PSF_CHPEAK peakdata[],MYLONG *peaktime)
 {
 	int i,nchans;
 	PSFFILE *sfdat;
-	
+
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
 	if(sfdat==NULL)
 		return PSF_E_BADARG;
-#ifdef _DEBUG		
+#ifdef _DEBUG
 	assert(sfdat->file);
 	assert(sfdat->filename);
 #endif
 	/* TODO: we may want to have this, for RAW files, even though we won't write it */
 	if(sfdat->pPeaks==NULL){		   /*NOT an error: just don't have the chunk*/
 		if(peaktime!= NULL)
-			*peaktime = 0;		
-		return 0;			
+			*peaktime = 0;
+		return 0;
 
 	}
 	if(peaktime != NULL)
@@ -3321,11 +3321,11 @@ int psf_sndSetDither(int sfd,unsigned int dtype)
 
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
 	if(sfdat==NULL)
 		return PSF_E_BADARG;
-#ifdef _DEBUG		
+#ifdef _DEBUG
 	assert(sfdat->file);
 	assert(sfdat->filename);
 #endif
@@ -3335,7 +3335,7 @@ int psf_sndSetDither(int sfd,unsigned int dtype)
 	sfdat->dithertype = dtype;
 
 	return PSF_E_NOERROR;
-	
+
 }
 /* get current dither setting */
 int psf_sndGetDither(int sfd)
@@ -3344,23 +3344,23 @@ int psf_sndGetDither(int sfd)
 
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
 	if(sfdat==NULL)
 		return PSF_E_BADARG;
-#ifdef _DEBUG		
+#ifdef _DEBUG
 	assert(sfdat->file);
 	assert(sfdat->filename);
 #endif
 
 	return sfdat->dithertype;
-	
+
 }
 
 psf_channelformat get_speakerlayout(DWORD chmask,DWORD chans)
 {
     psf_channelformat chformat = MC_WAVE_EX;	// default is some weird format!
-    
+
     /* accept chancount > numbits set in speakermask */
     switch(chmask){
         case(SPKRS_UNASSIGNED):
@@ -3377,7 +3377,7 @@ psf_channelformat get_speakerlayout(DWORD chmask,DWORD chans)
         case(SPKRS_GENERIC_QUAD):
             if(chans==4)
                 chformat = MC_QUAD;
-            break;			
+            break;
         case(SPKRS_SURROUND_LCRS):
             if(chans==4)
                 chformat = MC_LCRS;
@@ -3386,7 +3386,7 @@ psf_channelformat get_speakerlayout(DWORD chmask,DWORD chans)
             if(chans==6)
                 chformat = MC_DOLBY_5_1;
             break;
-        case(SPKRS_SURR_5_0):                   
+        case(SPKRS_SURR_5_0):
             if(chans==5)
                 chformat = MC_SURR_5_0;
             break;
@@ -3403,20 +3403,18 @@ psf_channelformat get_speakerlayout(DWORD chmask,DWORD chans)
 int psf_speakermask(int sfd)
 {
     PSFFILE *sfdat;
-    
+
 	if(sfd < 0 || sfd > psf_maxfiles)
 		return PSF_E_BADARG;
-	
+
 	sfdat  = psf_files[sfd];
 	if(sfdat==NULL)
 		return PSF_E_BADARG;
-    
+
     return (int) sfdat->fmt.dwChannelMask;
 }
 
-/* TODO: define a psf_writePeak function; probably to a single nominated channel. 
+/* TODO: define a psf_writePeak function; probably to a single nominated channel.
    This would be needed as soon as write is performed with random over-write activity.
    This is probably something to discourage, however!
 */
-
-
