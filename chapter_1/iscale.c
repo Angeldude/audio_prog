@@ -98,16 +98,18 @@ int main(int argc, char* argv[])
   /* finally, read the array, write to screen, and optionally to file */
 
   for(i=0; i <= notes; i++){
+    double raisedPower = pow(ratio, i);
+    double interval = intervals[i];
     if(write_interval)
-    printf("%d:\t%f\t%f\n", i, pow(ratio, i), intervals[i]);
+    printf("%d:\t%f\t%f\n", i, raisedPower, interval);
     else
-    printf("%d:\t%f\n", i, intervals[i]);
+    printf("%d:\t%f\n", i, interval);
     if(fp){
       if(write_interval)
         err = fprintf(fp, "%d:\t%f\t%f\n",
-             i, pow(ratio, i), intervals[i]);
+             i, raisedPower, interval);
       else
-        err = fprintf(fp, "%d:\t%f\n", i, intervals[i]);
+        err = fprintf(fp, "%d:\t%f\n", i, interval);
       if(err < 0)
         break;
     }
