@@ -4,9 +4,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-/* usage iscale [-m][-i] N startval [outfile.txt]
+/* usage iscale [-m][-i][-a] N startval [outfile.txt]
     -m : sets format of startval as MIDI note
     -i : prints the calculated interval as well as the abs freq
+    -a: instead of overwriting file, list is appended
     outfile: optional text filename for output data
 */
 int main(int argc, char* argv[])
@@ -18,6 +19,7 @@ int main(int argc, char* argv[])
   double startval, basefreq, ratio;
   FILE* fp;
   double intervals[25];
+  char write = 'w';
 
 /* check first arg for flag option: argc at least 2 */
   while(argc > 1){
@@ -26,6 +28,8 @@ int main(int argc, char* argv[])
         ismidi = 1;
       else if(argv[1][1] == 'i')
         write_interval = 1;
+      else if(argv[1][1] == 'a')
+          write = 'a';
       else {
         printf("error: unrecognized option %s\n", argv[1]);
         return 1;
@@ -39,7 +43,7 @@ int main(int argc, char* argv[])
 
   if(argc < 3){
     printf("insufficient arguments\n");
-    printf("Usage: iscale [-m][-i] N startval [outfile.txt]\n");
+    printf("Usage: iscale [-m][-i][-a] N startval [outfile.txt]\n");
     return 1;
   }
   /* now read and check all arguments */
@@ -68,7 +72,7 @@ int main(int argc, char* argv[])
   /* check for optional filenam */
   fp = NULL;
   if(argc == 4){
-    fp = fopen(argv[3], "a");
+    fp = fopen(argv[3], &write);
     if(fp == NULL){
       printf("WARNING: unable to create file %s\n", argv[3]);
       perror("");
@@ -96,7 +100,9 @@ int main(int argc, char* argv[])
   }
 
   /* finally, read the array, write to screen, and optionally to file */
-
+  if(fp){
+    err = fprintf(fp, "List of %d intervals starting at %.2f\n", notes, startval);
+  }
   for(i=0; i <= notes; i++){
     double raisedPower = pow(ratio, i);
     double interval = intervals[i];
@@ -107,12 +113,16 @@ int main(int argc, char* argv[])
     if(fp){
       if(write_interval)
         err = fprintf(fp, "%d:\t%f\t%f\n",
-             i, raisedPower, interval);
+        i, raisedPower, interval);
       else
         err = fprintf(fp, "%d:\t%f\n", i, interval);
       if(err < 0)
         break;
     }
+  }
+
+  if(write == 'a'){
+    err = fprintf(fp, "\n");
   }
 
   if(err < 0)
