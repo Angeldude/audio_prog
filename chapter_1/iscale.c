@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
   /* check for optional filenam */
   fp = NULL;
   if(argc == 4){
-    fp = fopen(argv[3], "w");
+    fp = fopen(argv[3], "a");
     if(fp == NULL){
       printf("WARNING: unable to create file %s\n", argv[3]);
       perror("");
